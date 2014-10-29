@@ -81,7 +81,7 @@ def ageHE(process,scenario):
     if hasattr(process,'es_hardcode'):
         process.es_hardcode.HERecalibration = cms.uint32(scenario)
     return process
-	
+
 #turnon = True enables default, False disables
 def ageHF(process,turnon):
     if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'hcal'):
@@ -118,7 +118,7 @@ def ageHcal(process,lumi):
     instLumi=1.0e34
     if lumi>=1000:
         instLumi=5.0e34
-	
+
     if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'hcal'):  
         process.mix.digitizers.hcal.DelivLuminosity = cms.double(float(lumi))  # integrated lumi in fb-1
 
@@ -131,11 +131,11 @@ def ageHcal(process,lumi):
     if hasattr(process,'es_hardcode'):
         process.es_hardcode.iLumi = cms.double(float(lumi))
 
-	#functions to enable individual subdet aging
-	ageHB(process,1)
-	ageHE(process,1)
-	ageHF(process,True)
-	ageSipm(process,True,lumi)
+    #functions to enable individual subdet aging
+    ageHB(process,1)
+    ageHE(process,1)
+    ageHF(process,True)
+    ageSipm(process,True,lumi)
         
     return process
 
