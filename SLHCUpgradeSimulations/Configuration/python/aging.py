@@ -66,31 +66,40 @@ def agePixel(process,lumi):
 
     return process    
 
-def ageHcal(process,lumi):
+#scenario = 1 enables default, 0 disables
+def ageHB(process,scenario):
+    if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'hcal'):
+        process.mix.digitizers.hcal.HBDarkening = cms.uint32(scenario)
+    if hasattr(process,'es_hardcode'):
+        process.es_hardcode.HBRecalibration = cms.uint32(scenario)
+    return process
 
-    instLumi=1.0e34
-    if lumi>=1000:
-        instLumi=5.0e34
+#scenario = 1 enables default, 0 disables
+def ageHE(process,scenario):
+    if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'hcal'):
+        process.mix.digitizers.hcal.HEDarkening = cms.uint32(scenario)
+    if hasattr(process,'es_hardcode'):
+        process.es_hardcode.HERecalibration = cms.uint32(scenario)
+    return process
 	
-    if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'hcal'):  
-        process.mix.digitizers.hcal.DelivLuminosity = cms.double(float(lumi))  # integrated lumi in fb-1
-        process.mix.digitizers.hcal.HEDarkening     = cms.uint32(1)
-        process.mix.digitizers.hcal.HFDarkening     = cms.bool(True)
+#turnon = True enables default, False disables
+def ageHF(process,turnon):
+    if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'hcal'):
+        process.mix.digitizers.hcal.HFDarkening = cms.bool(turnon)
+    if hasattr(process,'es_hardcode'):
+        process.es_hardcode.HFRecalibration = cms.bool(turnon)
+    return process
 
-    #these lines need to be further activated by tuning on 'complete' aging for HF 
-    if hasattr(process,'g4SimHits'):  
-        process.g4SimHits.HCalSD.InstLuminosity = cms.double(float(instLumi))
-        process.g4SimHits.HCalSD.DelivLuminosity = cms.double(float(lumi))
-
+#turnon = True enables default, False disables
+#needs lumi to set proper ZS thresholds
+def ageSipm(process,turnon,lumi):
     #recalibration and darkening always together
     if hasattr(process,'es_hardcode'):
-        process.es_hardcode.HERecalibration = cms.uint32(1)
-        process.es_hardcode.HFRecalibration = cms.bool(True)
-        process.es_hardcode.iLumi = cms.double(float(lumi))
+        process.es_hardcode.SipmAging = cms.bool(turnon)
 
     #change ZS thresholds for SiPMs
     if hasattr(process,'simHcalDigis'):
-        if lumi<499: #values for 0 to 200
+        if lumi<499 or not turnon: #values for 0 to 200
             process.simHcalDigis.HBlevel=cms.int32(16)
             process.simHcalDigis.HElevel=cms.int32(16)
         elif lumi<999: #values for 500
@@ -102,6 +111,31 @@ def ageHcal(process,lumi):
         else: #values for 3000
             process.simHcalDigis.HBlevel=cms.int32(209)
             process.simHcalDigis.HElevel=cms.int32(76) 
+    return process
+
+def ageHcal(process,lumi):
+
+    instLumi=1.0e34
+    if lumi>=1000:
+        instLumi=5.0e34
+	
+    if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'hcal'):  
+        process.mix.digitizers.hcal.DelivLuminosity = cms.double(float(lumi))  # integrated lumi in fb-1
+
+    #these lines need to be further activated by turning on 'complete' aging for HF 
+    if hasattr(process,'g4SimHits'):  
+        process.g4SimHits.HCalSD.InstLuminosity = cms.double(float(instLumi))
+        process.g4SimHits.HCalSD.DelivLuminosity = cms.double(float(lumi))
+
+    #recalibration and darkening always together
+    if hasattr(process,'es_hardcode'):
+        process.es_hardcode.iLumi = cms.double(float(lumi))
+
+	#functions to enable individual subdet aging
+	ageHB(process,1)
+	ageHE(process,1)
+	ageHF(process,True)
+	ageSipm(process,True,lumi)
         
     return process
 
@@ -221,43 +255,6 @@ def ecal_complete_aging(process):
         process.g4SimHits.ECalSD.AgeingWithSlopeLY = cms.untracked.bool(True)
     if hasattr(process,'ecal_digi_parameters'):    
         process.ecal_digi_parameters.UseLCcorrection = cms.untracked.bool(False)
-    return process
-
-def turn_off_HE_aging(process):
-    if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'hcal'):    
-        process.mix.digitizers.hcal.HEDarkening = cms.uint32(0)
-    if hasattr(process,'es_hardcode'):
-        process.es_hardcode.HERecalibration = cms.uint32(0)
-    return process
-
-def set_HE_aging_scenario(process,scenario):
-    if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'hcal'):
-        process.mix.digitizers.hcal.HEDarkening = cms.uint32(scenario)
-    if hasattr(process,'es_hardcode'):
-        process.es_hardcode.HERecalibration = cms.uint32(scenario)
-    return process
-
-def turn_off_HB_aging(process):
-    if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'hcal'):    
-        process.mix.digitizers.hcal.HBDarkening = cms.uint32(0)
-    if hasattr(process,'es_hardcode'):
-        process.es_hardcode.HBRecalibration = cms.uint32(0)
-    return process
-
-def set_HB_aging_scenario(process,scenario):
-    if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'hcal'):
-        process.mix.digitizers.hcal.HBDarkening = cms.uint32(scenario)
-    if hasattr(process,'es_hardcode'):
-        process.es_hardcode.HBRecalibration = cms.uint32(scenario)
-    return process
-
-def turn_off_HF_aging(process):
-    if hasattr(process,'g4SimHits'):
-        process.g4SimHits.HCalSD.HFDarkening = cms.untracked.bool(False)
-    if hasattr(process,'mix') and hasattr(process.mix,'digitizers') and hasattr(process.mix.digitizers,'hcal'):    
-        process.mix.digitizers.hcal.HFDarkening = cms.bool(False)
-    if hasattr(process,'es_hardcode'):
-        process.es_hardcode.HFRecalibration = cms.bool(False)
     return process
 
 def turn_off_Pixel_aging(process):
