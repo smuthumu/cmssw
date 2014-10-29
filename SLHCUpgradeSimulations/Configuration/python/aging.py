@@ -132,7 +132,6 @@ def ageHcal(process,lumi):
         process.es_hardcode.iLumi = cms.double(float(lumi))
 
     #functions to enable individual subdet aging
-    ageHB(process,1)
     ageHE(process,1)
     ageHF(process,True)
     ageSipm(process,True,lumi)
