@@ -94,7 +94,7 @@ bool HEJetsMC::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
        n_gen++;	
      }
 
-   accept_eta = (fabs(etajet[0])<1.8 && etajet[1]>1.8 && etajet[1]<3.0) || (fabs(etajet[1])<1.8 && etajet[0]>1.8 && etajet[0]<3.0);
+   accept_eta = (fabs(etajet[0])<1.8 && fabs(etajet[1])>1.8 && fabs(etajet[1])<3.0) || (fabs(etajet[1])<1.8 && fabs(etajet[0])>1.8 && fabs(etajet[0])<3.0);
    accept_pt = ptjet[0] > minpt_ && ptjet[1] > minpt_; 
 	
    if(n_gen == 2 && accept_eta && accept_pt)
