@@ -11,6 +11,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Utilities/interface/EDMException.h"
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 
@@ -57,9 +58,8 @@ void JetCorrectorDBWriter::beginJob()
     append += algo;
     append += ".txt"; 
     inputTxtFile = path+era+append;
-    edm::FileInPath fip(inputTxtFile);
-    std::ifstream input(fip.fullPath().c_str() );
-    if ( input.good() ) {
+    try {
+      edm::FileInPath fip(inputTxtFile);
       std::cout << "Opened file " << inputTxtFile << std::endl;
       // create the parameter object from file 
       std::vector<std::string> sections;
@@ -75,7 +75,8 @@ void JetCorrectorDBWriter::beginJob()
 	}
       }
       std::cout << "Added record " << i << std::endl;
-    } else {
+    }
+    catch(edm::Exception ex) {
       std::cout << "Did not find JEC file " << inputTxtFile << std::endl;
     }
     
