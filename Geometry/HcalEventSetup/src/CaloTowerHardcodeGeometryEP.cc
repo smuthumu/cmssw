@@ -55,7 +55,7 @@ CaloTowerHardcodeGeometryEP::ReturnType
 CaloTowerHardcodeGeometryEP::produce(const CaloTowerGeometryRecord& iRecord)
 {
   edm::ESHandle<HcalTopology> hcalTopology;
-  iRecord.getRecord<IdealGeometryRecord>().get( hcalTopology );
+  iRecord.getRecord<HcalRecNumberingRecord>().get( hcalTopology );
   
   std::auto_ptr<CaloSubdetectorGeometry> pCaloSubdetectorGeometry( loader_->load( &*hcalTopology ));
 
