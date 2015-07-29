@@ -2439,7 +2439,8 @@ process.hltTowerMakerForAll = cms.EDProducer( "CaloTowersCreator",
     MomEBDepth = cms.double( 0.3 ),
     HBWeight = cms.double( 1.0 ),
     HOGrid = cms.vdouble(  ),
-    EBGrid = cms.vdouble(  )
+    EBGrid = cms.vdouble(  ),
+    HcalPhase = cms.int32(0)
 )
 process.hltAK4CaloJets = cms.EDProducer( "FastjetJetProducer",
     Active_Area_Repeats = cms.int32( 5 ),
@@ -5705,7 +5706,8 @@ process.hltTowerMakerForPF = cms.EDProducer( "CaloTowersCreator",
     MomEBDepth = cms.double( 0.3 ),
     HBWeight = cms.double( 1.0 ),
     HOGrid = cms.vdouble(  ),
-    EBGrid = cms.vdouble(  )
+    EBGrid = cms.vdouble(  ),
+    HcalPhase = cms.int32(0)
 )
 process.hltAK4CaloJetsPF = cms.EDProducer( "FastjetJetProducer",
     Active_Area_Repeats = cms.int32( 5 ),

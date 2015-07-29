@@ -53,7 +53,9 @@ towermaker = cms.EDProducer("CaloTowersCreator",
 
     # use of recovered hits
     UseHcalRecoveredHits = cms.bool(True),
-    UseEcalRecoveredHits = cms.bool(True)
+    UseEcalRecoveredHits = cms.bool(True),
+    
+    HcalPhase = cms.int32(0)
 )
 
 
