@@ -1202,6 +1202,8 @@ class RunMETCorrectionsAndUncertainties(ConfigToolBase):
                       'L2Relative', 
                       'L3Absolute'],
             payload = 'AK4PFchs' ) # always CHS from miniAODs
+        if self._parameters["runOnData"].value:
+                patJetCorrFactorsReapplyJEC.levels.append("L2L3Residual")
         
         from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
         patJetsReapplyJEC = patJetsUpdated.clone(
@@ -1209,10 +1211,10 @@ class RunMETCorrectionsAndUncertainties(ConfigToolBase):
             jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC"))
             )
         
-        setattr(process,"patJetCorrFactorsReapplyJEC",patJetCorrFactorsReapplyJEC)
-        setattr(process,"patJets",patJetsReapplyJEC.clone())
-        patMetModuleSequence += getattr(process,"patJetCorrFactorsReapplyJEC")
-        patMetModuleSequence += getattr(process,"patJets")
+        setattr(process,"patJetCorrFactorsReapplyJEC"+postfix,patJetCorrFactorsReapplyJEC)
+        setattr(process,"patJets"+postfix,patJetsReapplyJEC.clone())
+        patMetModuleSequence += getattr(process,"patJetCorrFactorsReapplyJEC"+postfix)
+        patMetModuleSequence += getattr(process,"patJets"+postfix)
 
 
     def ak4JetReclustering(self,process, pfCandCollection, patMetModuleSequence, postfix):
