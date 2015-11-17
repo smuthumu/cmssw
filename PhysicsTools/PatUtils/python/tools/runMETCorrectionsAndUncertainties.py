@@ -276,14 +276,13 @@ class RunMETCorrectionsAndUncertainties(ConfigToolBase):
 
         patMetModuleSequence = cms.Sequence()
 
-        # recompute the MET (and thus the jets as well for correction) from scratch
+        # recompute the MET (but not necessarily the jets) from scratch
         if recoMetFromPFCs:
             self.recomputeRawMetFromPfcs(process, 
                                          pfCandCollection, 
                                          onMiniAOD,
                                          patMetModuleSequence,
                                          postfix)
-            reclusterJets = True
         elif onMiniAOD: #raw MET extraction if running on miniAODs
             self.extractMET(process, "raw", patMetModuleSequence, postfix)
 
@@ -324,10 +323,18 @@ class RunMETCorrectionsAndUncertainties(ConfigToolBase):
             getattr(process,"patPFMetT1T2Corr").src = jetCollectionUnskimmed
             getattr(process,"patPFMetT2Corr").src = jetCollectionUnskimmed
             
-            if postfix!="" and reclusterJets:
-                 getattr(process,"patPFMetT1T2Corr"+postfix).src = cms.InputTag(jetCollectionUnskimmed.value()+postfix)
-                 getattr(process,"patPFMetT2Corr"+postfix).src = cms.InputTag(jetCollectionUnskimmed.value()+postfix)
+            if postfix!="":
+                if reclusterJets:
+                    getattr(process,"patPFMetT1T2Corr"+postfix).src = cms.InputTag(jetCollectionUnskimmed.value()+postfix)
+                    getattr(process,"patPFMetT2Corr"+postfix).src = cms.InputTag(jetCollectionUnskimmed.value()+postfix)
+                else:
+                    getattr(process,"patPFMetT1T2Corr"+postfix).src = cms.InputTag(jetCollectionUnskimmed.value())
+                    getattr(process,"patPFMetT2Corr"+postfix).src = cms.InputTag(jetCollectionUnskimmed.value())
 
+        #fix the vertex collection for miniAOD
+        if hasattr(process, "patPFMetTxyCorr"+postfix) and onMiniAOD:
+            getattr(process, "patPFMetTxyCorr"+postfix).vertexCollection = cms.InputTag("offlineSlimmedPrimaryVertices")
+                    
         #compute the uncertainty on the MET
         patMetUncertaintySequence = cms.Sequence()
         if computeUncertainties:
