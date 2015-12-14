@@ -19,6 +19,7 @@ public:
   QIE10DataFrame() { }
   QIE10DataFrame(const edm::DataFrameContainer& c, edm::DataFrame::size_type i) : edm::DataFrame(c,i) { }
   QIE10DataFrame(edm::DataFrame df) : edm::DataFrame(df) { }
+  QIE10DataFrame(edm::DataFrame::id_type i, edm::DataFrame::data_type const * idata = NULL, edm::DataFrame::size_type isize = 0) : edm::DataFrame(i,idata,isize) {}
 
   class Sample {
   public:
@@ -46,8 +47,18 @@ public:
 
   /// Get the detector id
   DetId detid() const { return DetId(id()); }
+  edm::DataFrame::id_type id() const { return edm::DataFrame::id(); }
+  /// more accessors
+  edm::DataFrame::size_type size() const { return edm::DataFrame::size(); }
+  /// iterators
+  edm::DataFrame::iterator begin() { return edm::DataFrame::begin(); }
+  edm::DataFrame::iterator end() { return edm::DataFrame::end(); }
+  edm::DataFrame::const_iterator begin() const { return edm::DataFrame::begin(); }
+  edm::DataFrame::const_iterator end() const { return edm::DataFrame::end(); }
   /// total number of samples in the digi
   int samples() const { return (size()-HEADER_WORDS-FLAG_WORDS)/WORDS_PER_SAMPLE; }
+  /// for backward compatibility
+  int presamples() const;
   /// get the flavor of the frame
   static const int OFFSET_FLAVOR = 12;
   static const int MASK_FLAVOR = 0x7;
@@ -57,7 +68,12 @@ public:
   bool linkError() const { return edm::DataFrame::operator[](0)&MASK_LINKERROR; }
   /// was this a mark-and-pass ZS event?
   static const int MASK_MARKPASS = 0x100;
-  bool wasMarkAndPass() const {return edm::DataFrame::operator[](0)&MASK_MARKPASS; }
+  bool zsMarkAndPass() const {return edm::DataFrame::operator[](0)&MASK_MARKPASS; }
+  /// other ZS functions (TODO: real implementation)
+  bool zsUnsuppressed() const { return false; }
+  uint32_t zsCrossingMask() const { return 0; }
+  /// set ZS params
+  void setZSInfo(bool unsuppressed, bool markAndPass, uint32_t crossingMask=0);
   /// get the sample
   inline Sample operator[](edm::DataFrame::size_type i) const { return Sample(*this,i*WORDS_PER_SAMPLE+HEADER_WORDS); }
   /// set the sample contents

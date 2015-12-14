@@ -17,6 +17,17 @@ void QIE10DataFrame::copyContent(const QIE10DataFrame& digi) {
     edm::DataFrame::operator[](i)=digi.edm::DataFrame::operator[](i);
 }
 
+int QIE10DataFrame::presamples() const {
+  for (int i=0; i<digi.samples(); i++) {
+    if (digi[i].soi()) return i;
+  }
+  return -1;
+}
+
+void QIE10DataFrame::setZSInfo(bool unsuppressed, bool markAndPass, uint32_t crossingMask){
+	if(markAndPass) edm::DataFrame::operator[](0) |= MASK_MARKPASS;
+}
+
 std::ostream& operator<<(std::ostream& s, const QIE10DataFrame& digi) {
   if (digi.detid().det()==DetId::Hcal) {
     s << HcalGenericDetId(digi.detid());
@@ -25,7 +36,7 @@ std::ostream& operator<<(std::ostream& s, const QIE10DataFrame& digi) {
   }
   s << " " << digi.samples() << " samples";
   if (digi.linkError()) s << " LinkError ";
-  if (digi.wasMarkAndPass()) s << " MaP ";
+  if (digi.zsMarkAndPass()) s << " MaP ";
   s << std::endl;
   for (int i=0; i<digi.samples(); i++) {
     s << "  ADC=" << digi[i].adc() << " TDC(LE)=" << digi[i].le_tdc() << " TDC(TE)=" << digi[i].te_tdc() << " CAPID=" << digi[i].capid();
