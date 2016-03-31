@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
+from Configuration.StandardSequences.Phase2Status import Phase2Status
+
 class Eras (object):
     """
     Dummy container for all the cms.Modifier instances that config fragments
@@ -21,16 +23,11 @@ class Eras (object):
         # "run2_common" over the whole python tree). In practice, I don't think it's worth
         # it, and this also gives the flexibilty to take it out easily.
 
-        # Phase 2 sub-eras for stable features
+        # Phase 2 sub-eras
         self.phase2_common = cms.Modifier()
         self.phase2_tracker = cms.Modifier()
         self.phase2_hgc = cms.Modifier()
         self.phase2_muon = cms.Modifier()
-        # Phase 2 sub-eras for in-development features
-        self.phase2dev_common = cms.Modifier()
-        self.phase2dev_tracker = cms.Modifier()
-        self.phase2dev_hgc = cms.Modifier()
-        self.phase2dev_muon = cms.Modifier()
 
         # These eras are used to specify the tracking configuration
         # when it should differ from the default (which is Run2). This
@@ -59,9 +56,11 @@ class Eras (object):
         self.Run2_2017 = cms.ModifierChain( self.Run2_2016, self.phase1Pixel, self.trackingPhase1 )
         # Scenarios further afield.
         # Phase2 is everything for the 2023 (2026?) detector that works so far in this release.
-        self.Phase2 = cms.ModifierChain( self.phase2_common, self.phase2_tracker, self.phase2_hgc, self.phase2_muon )
-        # Phase2dev is everything for the 2023 (2026?) detector that is still in development.
-        self.Phase2dev = cms.ModifierChain( self.Phase2, self.phase2dev_common, self.phase2dev_tracker, self.phase2dev_hgc, self.phase2dev_muon )
+        for workflow in ['SIM','LRECO','RECO']:
+            Phase2List = [self.phase2_common]
+            for subdet in ['tracker','hgc','muon']:
+                if subdet in Phase2Status[workflow]: Phase2List.append(getattr(self,'phase2_'+subdet))
+            setattr(self,'Phase2'+workflow,cms.ModifierChain(Phase2List))
 
         # 2017 scenarios with customized tracking for expert use
         # Will be used as reference points for 2017 tracking development
@@ -79,8 +78,6 @@ class Eras (object):
                                 self.phase1Pixel,
                                 self.phase2_common, self.phase2_tracker,
                                 self.phase2_hgc, self.phase2_muon,
-                                self.phase2dev_common, self.phase2dev_tracker,
-                                self.phase2dev_hgc, self.phase2dev_muon,
                                 self.trackingPhase1, self.trackingPhase1PU70,
                                ]
 
