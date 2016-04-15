@@ -133,6 +133,13 @@ void CaloHitResponse::add(const CaloSamples & signal)
   if (oldSignal == 0) {
     theAnalogSignalMap[id] = signal;
 
+  if (id.det()==DetId::Hcal ) {
+    HcalDetId dId = HcalDetId(id);
+    if(dId.subdet()==HcalForward && dId.iphi()==39){
+      std::cout << "add: " << dId << " : signal[" << signal.presamples() << "] = " << signal[signal.presamples()] << std::endl;
+    }
+  }
+
   } else  {
     // need a "+=" to CaloSamples
     int sampleSize =  oldSignal->size();
@@ -140,6 +147,14 @@ void CaloHitResponse::add(const CaloSamples & signal)
     assert(signal.presamples() == oldSignal->presamples());
 
     for(int i = 0; i < sampleSize; ++i) {
+
+  if (id.det()==DetId::Hcal ) {
+    HcalDetId dId = HcalDetId(id);
+    if(i==signal.presamples() && dId.subdet()==HcalForward && dId.iphi()==39){
+      std::cout << "add: " << dId << " : signal[" << signal.presamples() << "] = " << (*oldSignal)[i] << " + " << signal[i] << " = " << (*oldSignal)[i] + signal[i] << std::endl;
+    }
+  }
+
       (*oldSignal)[i] += signal[i];
     }
   }
@@ -174,6 +189,14 @@ CaloSamples CaloHitResponse::makeAnalogSignal(const PCaloHit & hit, CLHEP::HepRa
 
   for(int bin = 0; bin < result.size(); bin++) {
     result[bin] += (*shape)(binTime)* signal;
+
+  if (detId.det()==DetId::Hcal ) {
+    HcalDetId dId = HcalDetId(detId);
+    if(dId.subdet()==HcalForward && dId.iphi()==39){
+      std::cout << "makeAnalogSignal: " << dId << " : result[" << bin  << "] = " << (*shape)(binTime) << " * " << signal << " = " << result[bin] << std::endl;
+    }
+  }
+
     binTime += BUNCHSPACE;
   }
   return result;
@@ -205,6 +228,14 @@ double CaloHitResponse::analogSignalAmplitude(const DetId & detId, float energy,
     npe = CLHEP::RandPoissonQ::shoot(engine,npe);
   }
   if(thePECorrection) npe = thePECorrection->correctPE(detId, npe, engine);
+
+  if (detId.det()==DetId::Hcal ) {
+    HcalDetId dId = HcalDetId(detId);
+    if(dId.subdet()==HcalForward && dId.iphi()==39){
+      std::cout << "analogSignalAmplitude: " << dId << " : " << energy << " * " << parameters.simHitToPhotoelectrons(detId) << " = " << npe << std::endl;
+    }
+  }
+
   return npe;
 }
 

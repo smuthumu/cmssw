@@ -7,6 +7,7 @@
 #include "CondFormats/HcalObjects/interface/HcalQIECoder.h"
 #include "CalibFormats/HcalObjects/interface/HcalCoderDb.h"
 #include "DataFormats/HcalDigi/interface/HcalUpgradeQIESample.h"
+#include "CondFormats/HcalObjects/interface/HcalQIEShape.h"
 
 HcalCoderDb::HcalCoderDb (const HcalQIECoder& fCoder, const HcalQIEShape& fShape)
   : mCoder (&fCoder),
@@ -50,10 +51,18 @@ template <class Digi> void HcalCoderDb::fCUpgrade2adc_ (const CaloSamples& clf, 
 
 template <> void HcalCoderDb::fC2adc_<QIE10DataFrame> (const CaloSamples& clf, QIE10DataFrame& df, int fCapIdOffset) const {
   int presample = clf.presamples ();
+  DetId detId(clf.id());
   for (int i=0; i<clf.size(); i++) {
     int capId = (fCapIdOffset + i) % 4;
 	bool soi = (i==presample);
     df.setSample(i, mCoder->adc(*mShape, clf[i], capId), 0, 0, capId, soi, true);
+  if (detId.det()==DetId::Hcal ) {
+    HcalDetId dId = HcalDetId(detId);
+    if(soi && dId.subdet()==HcalForward && dId.iphi()==39){
+      std::cout << "fC2adc: " << dId << " : sample[" << i << "] = " << "adc(shape" << mShape->nbins() << ", " << clf[i] << ", " << capId << ") = " << mCoder->adc(*mShape, clf[i], capId) << " = " << df[i].adc() << std::endl;
+    }
+  }
+
   }
 }
 

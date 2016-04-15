@@ -113,6 +113,12 @@ public:
     {
        CaloSamples * analogSignal = theHitResponse->findSignal(*idItr);
        bool needToDeleteSignal = false;
+  if (idItr->det()==DetId::Hcal ) {
+    HcalDetId dId = HcalDetId(*idItr);
+    if(dId.subdet()==HcalForward && dId.iphi()==39){
+      std::cout << "run/findSignal: " << dId << " : " << analogSignal << std::endl;
+    }
+  }
        // don't bother digitizing if no signal and no noise
        if(analogSignal == 0 && addNoise_) {
          // I guess we need to make a blank signal for this cell.

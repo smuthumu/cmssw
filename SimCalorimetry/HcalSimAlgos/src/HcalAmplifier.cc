@@ -20,6 +20,7 @@
 
 #include <cmath>
 #include <math.h>
+#include <iostream>
 
 HcalAmplifier::HcalAmplifier(const CaloVSimParameterMap * parameters, bool addNoise, bool PreMix1, bool PreMix2) :
   theDbService(nullptr),
@@ -70,7 +71,18 @@ void HcalAmplifier::amplify(CaloSamples & frame, CLHEP::HepRandomEngine* engine)
 void HcalAmplifier::pe2fC(CaloSamples & frame) const
 {
   const CaloSimParameters & parameters = theParameterMap->simParameters(frame.id());
+
+  double soi = frame[frame.presamples()];
+
   frame *= parameters.photoelectronsToAnalog(frame.id());
+  DetId detId(frame.id());
+  if (detId.det()==DetId::Hcal ) {
+    HcalDetId dId = HcalDetId(detId);
+    if(dId.subdet()==HcalForward && dId.iphi()==39){
+      std::cout << "pe2fC: " << dId << " : (frame[" << frame.presamples() << "]) " << soi << " * " << parameters.photoelectronsToAnalog(detId) << " = " << frame[frame.presamples()] << std::endl;
+    }
+  }
+
 }
 
 void HcalAmplifier::setHBtuningParameter(double tp) { HB_ff = tp; }
@@ -87,6 +99,7 @@ void HcalAmplifier::addPedestals(CaloSamples & frame, CLHEP::HepRandomEngine* en
    assert(theDbService != 0);
    HcalGenericDetId hcalGenDetId(frame.id());
    HcalGenericDetId::HcalGenericSubdetector hcalSubDet = hcalGenDetId.genericSubdet();
+   DetId detId(frame.id());
 
    bool useOld=false;
    if(hcalSubDet==HcalGenericDetId::HcalGenBarrel) useOld = useOldHB;
@@ -112,6 +125,13 @@ void HcalAmplifier::addPedestals(CaloSamples & frame, CLHEP::HepRandomEngine* en
        for (int tbin = 0; tbin < frame.size(); ++tbin) {
 	 int capId = (theStartingCapId + tbin)%4;
 	 double pedestal = calibs.pedestal(capId) + noise[tbin];
+
+  if (detId.det()==DetId::Hcal ) {
+    HcalDetId dId = HcalDetId(detId);
+    if(tbin==frame.presamples() && dId.subdet()==HcalForward && dId.iphi()==39){
+      std::cout << "addPedestals: " << dId << " : frame[" << tbin << "] = " << frame[tbin] << " + " << calibs.pedestal(capId) << " + " << noise[tbin] << " = " << frame[tbin]+pedestal << std::endl;
+    }
+  }
 
 	 frame[tbin] += pedestal;
        }
