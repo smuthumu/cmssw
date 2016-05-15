@@ -103,6 +103,7 @@ from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMet
 #for a full met computation, remove the pfCandColl input
 runMetCorAndUncFromMiniAOD(process,
                            isData=runOnData,
+                           postfix="Update"
                            )
 
 if not useHFCandidates:
@@ -132,15 +133,15 @@ process.MINIAODSIMoutput = cms.OutputModule("PoolOutputModule",
     compressionLevel = cms.untracked.int32(4),
     compressionAlgorithm = cms.untracked.string('LZMA'),
     eventAutoFlushCompressedSize = cms.untracked.int32(15728640),
-    outputCommands = cms.untracked.vstring( "keep *_slimmedMETs_*_RERUN",
+    outputCommands = cms.untracked.vstring( "keep *_slimmedMETsUpdate_*_RERUN",
                                             "keep *_slimmedMETsNoHF_*_*",
-                                            "keep *_patPFMet_*_*",
-                                            "keep *_patPFMetT1_*_*",
-                                            "keep *_patPFMetT1JetResDown_*_*",
-                                            "keep *_patPFMetT1JetResUp_*_*",
-                                            "keep *_patPFMetT1Smear_*_*",
-                                            "keep *_patPFMetT1SmearJetResDown_*_*",
-                                            "keep *_patPFMetT1SmearJetResUp_*_*",
+#                                            "keep *_patPFMet_*_*",
+#                                            "keep *_patPFMetT1_*_*",
+#                                            "keep *_patPFMetT1JetResDown_*_*",
+#                                            "keep *_patPFMetT1JetResUp_*_*",
+#                                            "keep *_patPFMetT1Smear_*_*",
+#                                            "keep *_patPFMetT1SmearJetResDown_*_*",
+#                                            "keep *_patPFMetT1SmearJetResUp_*_*",
                                             "keep *_puppiForMET_*_*",
                                             "keep *_puppi_*_*",
                                             "keep *_patPFMetT1Puppi_*_*",

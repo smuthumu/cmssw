@@ -328,14 +328,14 @@ class RunMETCorrectionsAndUncertainties(ConfigToolBase):
         #in order to be consistent with what is done in the correction and uncertainty step
         #particularly true for miniAODs
         if "T1" in metModName:
-            getattr(process,"patPFMetT1T2Corr"+postfix).src = cms.InputTag(jetCollection.value()+postfix)
-            getattr(process,"patPFMetT2Corr"+postfix).src = cms.InputTag(jetCollection.value()+postfix)
+            getattr(process,"patPFMetT1T2Corr"+postfix).src = cms.InputTag(jetCollection.value())
+            getattr(process,"patPFMetT2Corr"+postfix).src = cms.InputTag(jetCollection.value())
             #ZD:puppi currently doesn't have the L1 corrections in the GT
             if 'Puppi' in postfix:
                 getattr(process,"patPFMetT1T2Corr"+postfix).offsetCorrLabel = cms.InputTag("")
                 getattr(process,"patPFMetT2Corr"+postfix).offsetCorrLabel = cms.InputTag("")
         if "Smear" in metModName:
-            getattr(process,"patSmearedJets"+postfix).src = cms.InputTag(jetCollection.value()+postfix)
+            getattr(process,"patSmearedJets"+postfix).src = cms.InputTag(jetCollection.value())
             if 'Puppi' in postfix:
                 getattr(process,"patPFMetT1T2SmearCorr"+postfix).offsetCorrLabel = cms.InputTag("")
 
@@ -1098,7 +1098,7 @@ class RunMETCorrectionsAndUncertainties(ConfigToolBase):
 
         if "PF" == self._parameters["metType"].value:
             smearedJetModule = getattr(process, "patSmearedJets"+postfix).clone(
-                src = cms.InputTag(jetCollection.value()+postfix),
+                src = cms.InputTag(jetCollection.value()),
                 enabled = cms.bool(smear),
                 variation = cms.int32( int(varyByNsigmas) ),
                 )    
@@ -1311,7 +1311,7 @@ class RunMETCorrectionsAndUncertainties(ConfigToolBase):
                              patMetModuleSequence, postfix ):      
         if self._parameters["metType"].value == "PF": # not hasattr(process, "pfMet"+postfix)
             if "T1" in self._parameters['correctionLevel'].value:
-                getattr(process, "patPFMet"+postfix).srcJets = cms.InputTag(jetCollection.value()+postfix)
+                getattr(process, "patPFMet"+postfix).srcJets = cms.InputTag(jetCollection.value())
                 getattr(process, "patPFMet"+postfix).srcLeptons = cms.VInputTag(self._parameters["electronCollection"].value, 
                                                                                 self._parameters["muonCollection"].value,
                                                                                 self._parameters["photonCollection"].value,
@@ -1323,6 +1323,8 @@ class RunMETCorrectionsAndUncertainties(ConfigToolBase):
 
             if hasattr(process, "patPFMetTxyCorr"+postfix):
                 getattr(process, "patPFMetTxyCorr"+postfix).vertexCollection = cms.InputTag("offlineSlimmedPrimaryVertices")
+                print "patPFMetTxyCorr"+postfix
+                print getattr(process, "patPFMetTxyCorr"+postfix).vertexCollection
 
 
         if "Smear" in self._parameters['correctionLevel'].value:
@@ -1461,7 +1463,7 @@ class RunMETCorrectionsAndUncertainties(ConfigToolBase):
 
         setattr(process, "cleanedPatJets"+postfix, cleanPatJetProducer)
         jetProductionSequence += getattr(process, "cleanedPatJets"+postfix)
-        return cms.InputTag("cleanedPatJets")
+        return cms.InputTag("cleanedPatJets"+postfix)
 
 
 #========================================================================================
