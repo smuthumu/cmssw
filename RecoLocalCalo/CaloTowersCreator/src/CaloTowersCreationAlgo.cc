@@ -1270,6 +1270,7 @@ GlobalPoint CaloTowersCreationAlgo::hadShwrPos(CaloTowerDetId towerId, float fra
       if(items[i].det()!=DetId::Hcal) continue;
       HcalDetId hid(items[i]);
 	  if(hid.subdet() == HcalOuter) continue;
+	  if(!theHcalTopology->validHcal(hid)) continue;
 	  
       if(hid.depth()<frontDepth) { frontCellId = hid; frontDepth = hid.depth(); }
       if(hid.depth()>backDepth) { backCellId = hid; backDepth = hid.depth(); }
