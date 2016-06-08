@@ -38,9 +38,8 @@ namespace edm {
     data_type & operator[](size_type i) {
       return data()[i];
     }
-    
     inline
-    data_type operator[](size_type i) const {
+    const data_type& operator[](size_type i) const {
       return m_data[i];
     }
     

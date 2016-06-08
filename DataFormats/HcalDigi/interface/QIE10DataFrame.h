@@ -20,7 +20,8 @@ public:
 
   class Sample {
   public:
-    Sample(const edm::DataFrame& frame, edm::DataFrame::size_type i) : frame_(frame),i_(i) { }
+    Sample(const edm::DataFrame& frame, edm::DataFrame::size_type i) : word1_(frame[i]), word2_(frame[i+1]) { }
+    Sample(const edm::DataFrame::data_type& word1, const edm::DataFrame::data_type& word2) : word1_(word1), word2_(word2) {}
     static const int MASK_ADC = 0xFF;
     static const int MASK_LE_TDC = 0x3F;
     static const int MASK_TE_TDC = 0x1F;
@@ -29,15 +30,16 @@ public:
     static const int MASK_OK = 0x1000;
     static const int MASK_CAPID = 0x3;
     static const int OFFSET_CAPID = 12;
-    int adc() const { return frame_[i_]&MASK_ADC; }
-    int le_tdc() const { return frame_[i_+1]&MASK_LE_TDC; }
-    int te_tdc() const { return (frame_[i_+1]>>OFFSET_TE_TDC)&MASK_TE_TDC; }
-    bool ok() const { return frame_[i_]&MASK_OK; }
-    bool soi() const { return frame_[i_]&MASK_SOI; }
-    int capid() const { return (frame_[i_+1]>>OFFSET_CAPID)&MASK_CAPID; }
+    int adc() const { return word1_&MASK_ADC; }
+    int le_tdc() const { return word2_&MASK_LE_TDC; }
+    int te_tdc() const { return (word2_>>OFFSET_TE_TDC)&MASK_TE_TDC; }
+    bool ok() const { return word1_&MASK_OK; }
+    bool soi() const { return word1_&MASK_SOI; }
+    int capid() const { return (word2_>>OFFSET_CAPID)&MASK_CAPID; }
+    edm::DataFrame::data_type raw(edm::DataFrame::size_type i) { return (i > WORDS_PER_SAMPLE) ? 0 : ( (i==1) ? word2_ : word1_ ); }
   private:
-    const edm::DataFrame& frame_;
-    edm::DataFrame::size_type i_;
+    const edm::DataFrame::data_type& word1_;
+    const edm::DataFrame::data_type& word2_;
   };
 
   void copyContent(const QIE10DataFrame& src);
