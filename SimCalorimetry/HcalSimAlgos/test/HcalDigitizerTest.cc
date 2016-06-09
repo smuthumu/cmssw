@@ -161,7 +161,6 @@ void HcalDigitizerTest::analyze(const edm::Event& iEvent,
   // crossingFrame.addPileupCaloHits(-3, hitsName, &pileups, 0);
   HcalSimParameterMap parameterMap;
   HcalSimParameterMap siPMParameterMap = parameterMap;
-  siPMParameterMap.setHOZecotekDetIds(outerHcalDetIds);
   HcalShape hcalShape;
   HcalSiPMShape sipmShape;
   HFShape hfShape;

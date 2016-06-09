@@ -46,8 +46,8 @@ hcalSimParameters = cms.PSet(
         syncPhase = cms.bool(True),
         timePhase = cms.double(5.0),
         timeSmearing = cms.bool(False),
-        # 0 is HPD, 1 is SiPM, 2 fetches HPD/Zecotek/Hamamatsufrom DB
-        siPMCode = cms.int32(2)
+        # 0 is HPD, 1 is SiPM
+        siPMCode = cms.int32(0)
     ),
     hb = cms.PSet(
         readoutFrameSize = cms.int32(10),
@@ -91,14 +91,6 @@ hcalSimParameters = cms.PSet(
         timePhase = cms.double(-4.0)
     ),
 )
-
-hcalSimParameters.hoZecotek = hcalSimParameters.ho.clone()
-hcalSimParameters.hoZecotek.pixels = cms.int32(36000)
-hcalSimParameters.hoZecotek.photoelectronsToAnalog = [3.0]*16
-
-hcalSimParameters.hoHamamatsu = hcalSimParameters.ho.clone()
-hcalSimParameters.hoHamamatsu.pixels = cms.int32(960)
-hcalSimParameters.hoHamamatsu.photoelectronsToAnalog = [3.0]*16
 
 # Customises the HCal digitiser for post LS1 running
 eras.run2_common.toModify( hcalSimParameters, 

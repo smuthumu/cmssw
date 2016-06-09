@@ -137,8 +137,8 @@ HcalDigitizer::HcalDigitizer(const edm::ParameterSet& ps, edm::ConsumesCollector
   theHFQIE10ElectronicsSim = new HcalElectronicsSim(theHFQIE10Amplifier, theUpgradeCoderFactory, PreMix1); //should this use a different coder factory?
   theHBHEQIE11ElectronicsSim = new HcalElectronicsSim(theHBHEQIE11Amplifier, theUpgradeCoderFactory, PreMix1); //should this use a different coder factory?
 
-  bool doHOHPD = (theHOSiPMCode != 1);
-  bool doHOSiPM = (theHOSiPMCode != 0);
+  bool doHOHPD = (theHOSiPMCode == 0);
+  bool doHOSiPM = (theHOSiPMCode == 1);
   if(doHOHPD) {
     theHOResponse = new CaloHitResponse(theParameterMap, theShapes);
 	theHOHitFilter.setSubdets({HcalOuter});
@@ -660,59 +660,12 @@ void HcalDigitizer::buildHBHEQIECells(const std::vector<DetId>& allCells, const 
 
 void HcalDigitizer::buildHOSiPMCells(const std::vector<DetId>& allCells, const edm::EventSetup & eventSetup) {
   // all HPD
-
   if(theHOSiPMCode == 0) {
     theHODigitizer->setDetIds(allCells);
-  } else if(theHOSiPMCode == 1) {
+  }
+  // all SiPM
+  else if(theHOSiPMCode == 1) {
     theHOSiPMDigitizer->setDetIds(allCells);
-    // FIXME pick Zecotek or hamamatsu?
-  } else if(theHOSiPMCode == 2) {
-    std::vector<HcalDetId> zecotekDetIds, hamamatsuDetIds;
-    edm::ESHandle<HcalMCParams> p;
-    eventSetup.get<HcalMCParamsRcd>().get(p);
-    edm::ESHandle<HcalTopology> htopo;
-    eventSetup.get<HcalRecNumberingRecord>().get(htopo);
-   
-    HcalMCParams mcParams(*p.product());
-    if (mcParams.topo()==0) {
-      mcParams.setTopo(htopo.product());
-    }
-
-    for(std::vector<DetId>::const_iterator detItr = allCells.begin(); detItr != allCells.end(); ++detItr) {
-      int shapeType = mcParams.getValues(*detItr)->signalShape();
-      if(shapeType == HcalShapes::ZECOTEK) {
-        zecotekDetIds.emplace_back(*detItr);
-        theHOSiPMDetIds.push_back(*detItr);
-      } else if(shapeType == HcalShapes::HAMAMATSU) {
-        hamamatsuDetIds.emplace_back(*detItr);
-        theHOSiPMDetIds.push_back(*detItr);
-      } else {
-        theHOHPDDetIds.push_back(*detItr);
-      }
-    }
-
-    if(theHOHPDDetIds.size()>0) theHODigitizer->setDetIds(theHOHPDDetIds);
-    else {
-      delete theHODigitizer;
-      theHODigitizer = NULL;
-    }
-	
-    if(theHOSiPMDetIds.size()>0) theHOSiPMDigitizer->setDetIds(theHOSiPMDetIds);
-    else {
-      delete theHOSiPMDigitizer;
-      theHOSiPMDigitizer = NULL;
-    }
-	
-	if(theHOHPDDetIds.size()>0 && theHOSiPMDetIds.size()>0){
-      theHOSiPMHitFilter.setDetIds(theHOSiPMDetIds);
-      theHOHitFilter.setDetIds(theHOHPDDetIds);
-    }
-	
-    theParameterMap->setHOZecotekDetIds(zecotekDetIds);
-    theParameterMap->setHOHamamatsuDetIds(hamamatsuDetIds);
-
-    // make sure we don't got through this exercise again
-    theHOSiPMCode = -2;
   }
 }
 
