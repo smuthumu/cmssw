@@ -1674,6 +1674,35 @@ for k in upgradeKeys:
     if k2 in PUDataSets:
         upgradeStepDict['RecoFull_trackingOnlyPU'][k]=merge([PUDataSets[k2],upgradeStepDict['RecoFull_trackingOnly'][k]])
 
+    upgradeStepDict['RecoFullGlobal'][k] = {'-s':'RAW2DIGI,L1Reco,RECO',
+                                      '--conditions':gt,
+                                      '--datatier':'GEN-SIM-RECO',
+                                      '-n':'10',
+                                      '--runUnscheduled':'',
+                                      '--eventcontent':'FEVTDEBUGHLT',
+                                      '--geometry' : geom
+                                      }
+    if cust!=None : upgradeStepDict['RecoFullGlobal'][k]['--customise']=cust
+    if era is not None: upgradeStepDict['RecoFullGlobal'][k]['--era']=era
+
+    if k2 in PUDataSets:
+        upgradeStepDict['RecoFullGlobalPU'][k]=merge([PUDataSets[k2],upgradeStepDict['RecoFullGlobal'][k]])
+
+    upgradeStepDict['RecoFullGlobal_trackingOnlyVal'][k] = {'-s':'RAW2DIGI,L1Reco,RECO,VALIDATION:@trackingOnlyValidation,DQM:@trackingOnlyDQM',
+                                      '--conditions':gt,
+                                      '--datatier':'GEN-SIM-RECO,DQMIO',
+                                      '-n':'10',
+                                      '--runUnscheduled':'',
+                                      '--eventcontent':'FEVTDEBUGHLT,DQM',
+                                      '--geometry' : geom
+                                      }
+    if cust!=None : upgradeStepDict['RecoFullGlobal_trackingOnlyVal'][k]['--customise']=cust
+    if era is not None: upgradeStepDict['RecoFullGlobal_trackingOnlyVal'][k]['--era']=era
+
+    if k2 in PUDataSets:
+        upgradeStepDict['RecoFullGlobal_trackingOnlyValPU'][k]=merge([PUDataSets[k2],upgradeStepDict['RecoFullGlobal_trackingOnlyVal'][k]])
+
+
     upgradeStepDict['RecoFullLocal'][k] = {'-s':'RAW2DIGI,L1Reco,RECO:localreco',
                                       '--conditions':gt,
                                       '--datatier':'GEN-SIM-RECO',
@@ -1686,6 +1715,7 @@ for k in upgradeKeys:
 
     if k2 in PUDataSets:
         upgradeStepDict['RecoFullLocalPU'][k]=merge([PUDataSets[k2],upgradeStepDict['RecoFullLocal'][k]])
+
 
     upgradeStepDict['RecoFullHGCAL'][k] = {'-s':'RAW2DIGI,L1Reco,RECO',
                                       '--conditions':gt,
