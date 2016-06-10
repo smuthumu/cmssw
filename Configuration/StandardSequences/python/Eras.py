@@ -38,6 +38,7 @@ class Eras (object):
         self.trackingPhase1 = cms.Modifier()
         self.trackingPhase1PU70 = cms.Modifier()
         self.trackingLowPU = cms.Modifier()
+        self.trackingPhase2PU140 = cms.Modifier()
         
         # This era should not be set by the user with the "--era" command, it's
         # activated automatically if the "--fast" command is used.
@@ -60,8 +61,8 @@ class Eras (object):
         # Run3 includes the GE1/1 upgrade
         self.Run3 = cms.ModifierChain( self.Run2_2017,self.run3_GEM )
         # Phase2 is everything for the 2023 (2026?) detector that works so far in this release.
-        self.Phase2LReco = cms.ModifierChain( self.phase2_common, self.phase2_hcal, self.phase2_tracker, self.phase2_hgcal, self.phase2_muon, self.run3_GEM )
-        self.Phase2GReco = cms.ModifierChain( self.phase2_common, self.phase2_tracker, self.phase2_muon, self.run3_GEM ) # run 2 calorimeters
+        self.Phase2LReco = cms.ModifierChain( self.phase2_common, self.phase2_hcal, self.phase2_tracker, self.trackingPhase2PU140, self.phase2_hgcal, self.phase2_muon, self.run3_GEM )
+        self.Phase2GReco = cms.ModifierChain( self.phase2_common, self.phase2_tracker, self.trackingPhase2PU140, self.phase2_muon, self.run3_GEM ) # run 2 calorimeters
 
         # Scenarios with low-PU tracking (for B=0T reconstruction)
         self.Run2_2016_trackingLowPU = cms.ModifierChain(self.Run2_2016, self.trackingLowPU)
