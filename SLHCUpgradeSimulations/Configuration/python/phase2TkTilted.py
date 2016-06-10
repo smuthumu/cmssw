@@ -324,6 +324,16 @@ def customise_Reco(process,pileup):
     process.MeasurementTrackerEvent.stripClusterProducer = cms.string('')
     # FIXME::process.electronSeedsSeq broken
     process.ckftracks.remove(process.electronSeedsSeq)
+    process.ecalDrivenElectronSeeds.SeedConfiguration.fromTrackerSeeds = cms.bool(False)
+
+    # drop missing colls
+    alist=['FEVTDEBUG','FEVTDEBUGHLT','FEVT']
+    for a in alist:
+        b=a+'output'
+        if hasattr(process,b):
+            getattr(process,b).outputCommands.append('drop recoConversions_uncleanedOnlyAllConversions_*_*')
+            getattr(process,b).outputCommands.append('drop recoGsfElectronCores_uncleanedOnlyGsfElectronCores_*_*')
+            getattr(process,b).outputCommands.append('drop recoGsfElectrons_uncleanedOnlyGsfElectrons_*_*')
  
     return process
 
