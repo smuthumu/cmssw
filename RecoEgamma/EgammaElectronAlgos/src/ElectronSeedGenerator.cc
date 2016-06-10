@@ -270,10 +270,6 @@ void  ElectronSeedGenerator::run
   // if required get the vertices
   if (useRecoVertex_) e.getByToken(verticesTag_,theVertices);
 
-  if (!fromTrackerSeeds_)
-   { throw cms::Exception("NotSupported") << "Here in ElectronSeedGenerator " << __FILE__ << ":" << __LINE__ << " I would like to do theMeasurementTracker->update(e); but that no longer makes sense.\n"; 
-   }
-
   for  (unsigned int i=0;i<sclRefs.size();++i) {
     // Find the seeds
     recHits_.clear();
