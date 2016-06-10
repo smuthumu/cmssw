@@ -1538,6 +1538,7 @@ from  Configuration.PyReleaseValidation.upgradeWorkflowComponents import *
 defaultDataSets={}
 defaultDataSets['2017']='CMSSW_8_1_0_pre4-80X_upgrade2017_realistic_v4_UPG17-v'
 defaultDataSets['2023GReco']='CMSSW_8_1_0_pre4-80X_mcRun2_asymptotic_v13_2023LReco-v'
+defaultDataSets['2023LReco']='CMSSW_8_1_0_pre4-80X_mcRun2_asymptotic_v13_2023LReco-v'
 defaultDataSets['2023tilted']='CMSSW_8_1_0_pre4-80X_mcRun2_asymptotic_v13_2023tilted-v'
 
 keys=defaultDataSets.keys()
@@ -1662,6 +1663,9 @@ for k in upgradeKeys:
                                       }
     if cust!=None : upgradeStepDict['RecoFullLocal'][k]['--customise']=cust
     if era is not None: upgradeStepDict['RecoFullLocal'][k]['--era']=era
+
+    if k2 in PUDataSets:
+        upgradeStepDict['RecoFullLocalPU'][k]=merge([PUDataSets[k2],upgradeStepDict['RecoFullLocal'][k]])
 
     upgradeStepDict['RecoFullTracking'][k] = {'-s':'RAW2DIGI,L1Reco,RECO:reconstruction_trackingOnly',
                                       '--conditions':gt,
