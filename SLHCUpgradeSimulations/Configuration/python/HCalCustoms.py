@@ -87,7 +87,11 @@ def customise_Hcal2017(process):
         process.hcalnoise.digiCollName = cms.string('simHcalDigis')
     if hasattr(process,'datamixing_step'):
         process=customise_mixing(process)
-    
+    if hasattr(process,'dqmoffline_step'):
+        process.digiTask.tagHBHE = cms.untracked.InputTag("simHcalDigis")    
+        process.digiTask.tagHF = cms.untracked.InputTag("simHcalDigis")    
+        process.digiTask.tagHO = cms.untracked.InputTag("simHcalDigis")    
+
     return process
     
 #intermediate customization (HCAL 2017, HE and HF upgrades - w/ SiPMs & QIE11)
