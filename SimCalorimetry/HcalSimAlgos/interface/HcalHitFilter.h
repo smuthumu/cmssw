@@ -9,7 +9,7 @@ template <HcalSubdetector... subdets>
 class HcalHitFilter : public CaloVHitFilter 
 {
 public:
-  HcalHitFilter() : theSubdets(subdets...) {
+  HcalHitFilter() : theSubdets({subdets...}) {
     std::sort(theSubdets.begin(),theSubdets.end());
   }
   virtual ~HcalHitFilter() {}
