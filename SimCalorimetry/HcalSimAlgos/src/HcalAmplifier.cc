@@ -73,6 +73,14 @@ void HcalAmplifier::addPedestals(CaloSamples & frame, CLHEP::HepRandomEngine* en
   HcalGenericDetId hcalGenDetId(frame.id());
   HcalGenericDetId::HcalGenericSubdetector hcalSubDet = hcalGenDetId.genericSubdet();
 
+  if ( !( (frame.id().subdetId()==HcalGenericDetId::HcalGenBarrel) ||
+	  (frame.id().subdetId()==HcalGenericDetId::HcalGenEndcap) ||
+	  (frame.id().subdetId()==HcalGenericDetId::HcalGenForward) ||
+	  (frame.id().subdetId()==HcalGenericDetId::HcalGenOuter) ) ) return;
+
+  if(hcalGenDetId.isHcalCastorDetId()) return;
+  if(hcalGenDetId.isHcalZDCDetId()) return;
+
   const HcalCalibrationWidths & calibWidths = theDbService->getHcalCalibrationWidths(hcalGenDetId);
   const HcalCalibrations& calibs = theDbService->getHcalCalibrations(hcalGenDetId);
 
