@@ -561,9 +561,10 @@ void  HcalDigitizer::updateGeometry(const edm::EventSetup & eventSetup) {
   hbheCells.insert(hbheCells.end(), heCells.begin(), heCells.end());
   //handle mixed QIE8/11 scenario in HBHE
   if(theHBHEUpgradeDigitizer) {
-    theHBHEUpgradeDigitizer->setDetIds(hbheCells);
+    theHBHEQIE11DetIds = heCells; //hack to remove HB from UpgradeDigitizer
+    theHBHEUpgradeDigitizer->setDetIds(theHBHEQIE11DetIds);
     if(theHBHESiPMResponse)
-      ((HcalSiPMHitResponse *)theHBHESiPMResponse)->setDetIds(hbheCells);
+      ((HcalSiPMHitResponse *)theHBHESiPMResponse)->setDetIds(theHBHEQIE11DetIds);
   }
   else {
     buildHBHEQIECells(hbheCells,eventSetup);
@@ -650,6 +651,7 @@ void HcalDigitizer::buildHBHEQIECells(const std::vector<DetId>& allCells, const 
         theHBHEQIE8DetIds.push_back(*detItr);
       }
     }
+    theHBHEQIE8DetIds.clear(); //hack to remove HB
 	
 	if(theHBHEQIE8DetIds.size()>0) theHBHEDigitizer->setDetIds(theHBHEQIE8DetIds);
 	else {

@@ -3,6 +3,10 @@
 
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 #include "SimCalorimetry/HcalSimAlgos/interface/HcalElectronicsSim.h"
+#include "DataFormats/HcalDetId/interface/HcalDetId.h"
+#include <iostream>
+using std::cout;
+using std::endl;
 
 class HcalQIE10DigitizerTraits {
 
@@ -34,6 +38,7 @@ public:
   void operator()(DigiCollection & output, CLHEP::HepRandomEngine* engine, CaloSamples * analogSignal, std::vector<DetId>::const_iterator idItr, ElectronicsSim* theElectronicsSim){
     output.push_back( idItr->rawId() ) ;
     Digi digi ( output.back() ) ;  //QIEDataFrame gets ptr to edm::DataFrame data
+    if(analogSignal->id().det()==DetId::Hcal) cout << "Traits:run " << HcalDetId(analogSignal->id()) << " " << *analogSignal;
     theElectronicsSim->analogToDigital( engine, *analogSignal , digi, Traits::PreMixFactor, Traits::PreMixBits ) ;
   }
   

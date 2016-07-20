@@ -8,6 +8,10 @@
 #include "DataFormats/HcalDigi/interface/QIE11DataFrame.h"
 #include "CLHEP/Random/RandFlat.h"
 #include <math.h>
+#include "DataFormats/HcalDetId/interface/HcalDetId.h"
+#include <iostream>
+using std::cout;
+using std::endl;
 
 HcalElectronicsSim::HcalElectronicsSim(HcalAmplifier * amplifier, const HcalCoderFactory * coderFactory, bool PreMixing)
   : theAmplifier(amplifier),
@@ -30,18 +34,21 @@ void HcalElectronicsSim::setDbService(const HcalDbService * service) {
 template<class Digi> 
 void HcalElectronicsSim::convert(CaloSamples & frame, Digi & result, CLHEP::HepRandomEngine* engine) {
   result.setSize(frame.size());
+  if(frame.id().det()==DetId::Hcal) cout << "HcalElectronicsSim:convert " << HcalDetId(frame.id()) << " " << frame;
   theAmplifier->amplify(frame, engine);
   theCoderFactory->coder(frame.id())->fC2adc(frame, result, theStartingCapId);
 }
 
 template<> 
 void HcalElectronicsSim::convert<QIE10DataFrame>(CaloSamples & frame, QIE10DataFrame & result, CLHEP::HepRandomEngine* engine) {
+  if(frame.id().det()==DetId::Hcal) cout << "HcalElectronicsSim:convert " << HcalDetId(frame.id()) << " " << frame;
   theAmplifier->amplify(frame, engine);
   theCoderFactory->coder(frame.id())->fC2adc(frame, result, theStartingCapId);
 }
 
 template<> 
 void HcalElectronicsSim::convert<QIE11DataFrame>(CaloSamples & frame, QIE11DataFrame & result, CLHEP::HepRandomEngine* engine) {
+  if(frame.id().det()==DetId::Hcal) cout << "HcalElectronicsSim:convert " << HcalDetId(frame.id()) << " " << frame;
   theAmplifier->amplify(frame, engine);
   theCoderFactory->coder(frame.id())->fC2adc(frame, result, theStartingCapId);
 }
@@ -96,12 +103,14 @@ void HcalElectronicsSim::premix<QIE11DataFrame>(CaloSamples & frame, QIE11DataFr
 
 template<class Digi>
 void HcalElectronicsSim::analogToDigitalImpl(CLHEP::HepRandomEngine* engine, CaloSamples & lf, Digi & result, double preMixFactor, unsigned preMixBits) {
+  if(lf.id().det()==DetId::Hcal) cout << "HcalElectronicsSim:analogToDigitalImpl " << HcalDetId(lf.id()) << " " << lf;
   convert<Digi>(lf, result, engine);
   if(PreMixDigis) premix(lf,result,preMixFactor,preMixBits);
 }
 
 template<>
 void HcalElectronicsSim::analogToDigitalImpl<HcalUpgradeDataFrame>(CLHEP::HepRandomEngine* engine, CaloSamples & lf, HcalUpgradeDataFrame & result, double preMixFactor, unsigned preMixBits) {
+  if(lf.id().det()==DetId::Hcal) cout << "HcalElectronicsSim:analogToDigitalImpl " << HcalDetId(lf.id()) << " " << lf;
   convert<HcalUpgradeDataFrame>(lf, result, engine);
   theTDC.timing(lf, result, engine);
 }

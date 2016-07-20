@@ -17,6 +17,9 @@
 
 #include <math.h>
 #include <list>
+#include <iostream>
+using std::cout;
+using std::endl;
 
 HcalSiPMHitResponse::HcalSiPMHitResponse(const CaloVSimParameterMap * parameterMap,
 					 const CaloShapes * shapes) :
@@ -54,7 +57,7 @@ void HcalSiPMHitResponse::finalizeHits(CLHEP::HepRandomEngine* engine) {
       }
     }
 
-    LogDebug("HcalSiPMHitResponse") << HcalDetId(signal.id()) << ' ' << signal;
+    cout << "HcalSiPMHitResponse: blank " << HcalDetId(signal.id()) << ' ' << signal;
 
     if (keep) add(signal);
   }
@@ -89,14 +92,15 @@ void HcalSiPMHitResponse::add(const PCaloHit& hit, CLHEP::HepRandomEngine* engin
 				       );
 	}
 
-      LogDebug("HcalSiPMHitResponse") << id;
-      LogDebug("HcalSiPMHitResponse") << " fCtoGeV: " << pars.fCtoGeV(id)
-		<< " samplingFactor: " << pars.samplingFactor(id)
-		<< " photoelectronsToAnalog: " << pars.photoelectronsToAnalog(id)
-		<< " simHitToPhotoelectrons: " << pars.simHitToPhotoelectrons(id);
-      LogDebug("HcalSiPMHitResponse") << " energy: " << hit.energy()
-		<< " photons: " << photons 
-		<< " time: " << time;
+      cout << "HcalSiPMHitResponse: " << id
+           << " fCtoGeV: " << pars.fCtoGeV(id)
+           << " samplingFactor: " << pars.samplingFactor(id)
+           << " photoelectronsToAnalog: " << pars.photoelectronsToAnalog(id)
+           << " simHitToPhotoelectrons: " << pars.simHitToPhotoelectrons(id)
+           << " energy: " << hit.energy()
+           << " signal: " << signal
+           << " photons: " << photons 
+           << " time: " << time << endl;
       if (theHitCorrection != 0)
 	time += theHitCorrection->delay(hit, engine);
       LogDebug("HcalSiPMHitResponse") << " corrected time: " << time;
@@ -166,8 +170,8 @@ void HcalSiPMHitResponse::addPEnoise(CLHEP::HepRandomEngine* engine)
 
     } // precise time loop
 
-    LogDebug("HcalSiPMHitResponse") << id;
-    LogDebug("HcalSiPMHitResponse") << " total noise (PEs): " << sumnoisePE;
+    cout << "HcalSiPMHitResponse: " << id
+         << " total noise (PEs): " << sumnoisePE << endl;
 
   } // detId loop
 }                                               // HcalSiPMHitResponse::addPEnoise()
@@ -205,7 +209,7 @@ CaloSamples HcalSiPMHitResponse::makeSiPMSignal(DetId const& id,
   std::list< std::pair<double, double> > pulses;
   std::list< std::pair<double, double> >::iterator pulse;
   double timeDiff, pulseBit;
-  LogDebug("HcalSiPMHitResponse") << "makeSiPMSignal for " << HcalDetId(id);
+  cout << "HcalSiPMHitResponse: " << "makeSiPMSignal for " << HcalDetId(id) << endl;
 
   for (unsigned int tbin(0); tbin < photonTimeBins.size(); ++tbin) {
     pe = photonTimeBins[tbin];
@@ -215,11 +219,11 @@ CaloSamples HcalSiPMHitResponse::makeSiPMSignal(DetId const& id,
     if (pe > 0) {
       hitPixels = theSiPM->hitCells(engine, pe, 0., elapsedTime);
       sumHits += hitPixels;
-      LogDebug("HcalSiPMHitResponse") << " elapsedTime: " << elapsedTime
+      cout << "                                         " << " elapsedTime: " << elapsedTime
 				      << " sampleBin: " << sampleBin
 				      << " preciseBin: " << preciseBin
 				      << " pe: " << pe 
-				      << " hitPixels: " << hitPixels ;
+				      << " hitPixels: " << hitPixels  << endl;
       if (pars.doSiPMSmearing()) {
 	pulses.push_back( std::pair<double, double>(elapsedTime, hitPixels) );
       } else {
@@ -293,10 +297,10 @@ void HcalSiPMHitResponse::setDetIds(const std::vector<DetId> & detIds) {
   const HcalSimParameters& pars =
     dynamic_cast<const HcalSimParameters&>(theParameterMap->simParameters(id));
 
-  edm::LogInfo("HcalSiPMHitResponse") << " # SiPM pixels: "      << pars.pixels()
+  cout << "HcalSiPMHitResponse: " << " # SiPM pixels: "      << pars.pixels()
 				      << " readoutFrameSize: "   << pars.readoutFrameSize()
 				      << " theCrossTalk: "       << pars.sipmCrossTalk()
-				      << " sipmDarkCurrentuA: "  << pars.sipmDarkCurrentuA();
+				      << " sipmDarkCurrentuA: "  << pars.sipmDarkCurrentuA() << endl;
 				      
   theSiPM->setCrossTalk(pars.sipmCrossTalk());
 }

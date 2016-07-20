@@ -20,6 +20,9 @@
 
 #include <cmath>
 #include <math.h>
+#include <iostream>
+using std::cout;
+using std::endl;
 
 HcalAmplifier::HcalAmplifier(const CaloVSimParameterMap * parameters, bool addNoise, bool PreMix1, bool PreMix2) :
   theDbService(nullptr),
@@ -41,10 +44,12 @@ void HcalAmplifier::setDbService(const HcalDbService * service) {
 
 
 void HcalAmplifier::amplify(CaloSamples & frame, CLHEP::HepRandomEngine* engine) const {
+  if(frame.id().det()==DetId::Hcal) cout << "HcalAmplifier:amplify " << HcalDetId(frame.id()) << " " << frame;
   if(theIonFeedbackSim)
   {
     theIonFeedbackSim->addThermalNoise(frame, engine);
   }
+  if(frame.id().det()==DetId::Hcal) cout << "HcalAmplifier:amplify " << HcalDetId(frame.id()) << " " << frame;
   pe2fC(frame);
   // don't bother for blank signals
   if(theTimeSlewSim && frame[4] > 1.e-6)
@@ -63,8 +68,23 @@ void HcalAmplifier::amplify(CaloSamples & frame, CLHEP::HepRandomEngine* engine)
 
 void HcalAmplifier::pe2fC(CaloSamples & frame) const
 {
+  HcalGenericDetId hcalGenDetId(frame.id());
+  HcalGenericDetId::HcalGenericSubdetector hcalSubDet = hcalGenDetId.genericSubdet();
+
+  if ( !( (frame.id().subdetId()==HcalGenericDetId::HcalGenBarrel) ||
+      (frame.id().subdetId()==HcalGenericDetId::HcalGenEndcap) ||
+      (frame.id().subdetId()==HcalGenericDetId::HcalGenForward) ||
+      (frame.id().subdetId()==HcalGenericDetId::HcalGenOuter) ) ) return;
+
+  if(hcalGenDetId.isHcalCastorDetId()) return;
+  if(hcalGenDetId.isHcalZDCDetId()) return;
+
+  cout << "HcalAmplifier:pe2fC " << HcalDetId(frame.id()) << endl;
+  cout << "                    " << frame;
   const CaloSimParameters & parameters = theParameterMap->simParameters(frame.id());
   frame *= parameters.photoelectronsToAnalog(frame.id());
+  cout << "                    " << "photoelectronsToAnalog = " << parameters.photoelectronsToAnalog(frame.id()) << endl;
+  cout << "                    " << frame;
 }
 
 void HcalAmplifier::addPedestals(CaloSamples & frame, CLHEP::HepRandomEngine* engine) const
@@ -98,6 +118,10 @@ void HcalAmplifier::addPedestals(CaloSamples & frame, CLHEP::HepRandomEngine* en
       double pedestal = calibs.pedestal(capId) + noise[tbin];
       frame[tbin] += pedestal;
     }
+  cout << "HcalAmplifier:addPedestals " << HcalDetId(frame.id()) << endl;
+  cout << "                           " << "pedestals = " << calibs.pedestal(0) << ", " << calibs.pedestal(1) << ", " << calibs.pedestal(2) << ", " << calibs.pedestal(3) << " | widths = " << calibWidths.pedestal(0) << ", " << calibWidths.pedestal(1) << ", " << calibWidths.pedestal(2) << ", " << calibWidths.pedestal(3) << endl;
+  cout << "                           " << frame;
+
   }
 }
 

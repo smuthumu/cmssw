@@ -2,6 +2,10 @@
 #define HcalSimAlgos_HcalDigitizerTraits_h
 #include "DataFormats/HcalDigi/interface/HcalDigiCollections.h"
 #include "SimCalorimetry/HcalSimAlgos/interface/HcalElectronicsSim.h"
+#include "DataFormats/HcalDetId/interface/HcalDetId.h"
+#include <iostream>
+using std::cout;
+using std::endl;
 
 class HBHEDigitizerTraits {
 public:
@@ -51,6 +55,7 @@ public:
 
   void operator()(DigiCollection & output, CLHEP::HepRandomEngine* engine, CaloSamples * analogSignal, std::vector<DetId>::const_iterator idItr, ElectronicsSim* theElectronicsSim){
     Digi digi(*idItr);
+    if(analogSignal->id().det()==DetId::Hcal) cout << "Traits:run " << HcalDetId(analogSignal->id()) << " " << *analogSignal;
     theElectronicsSim->analogToDigital(engine, *analogSignal , digi, Traits::PreMixFactor, Traits::PreMixBits);
     output.push_back(std::move(digi));
   }

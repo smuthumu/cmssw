@@ -10,8 +10,13 @@
 #include "SimCalorimetry/CaloSimAlgos/interface/CaloVNoiseSignalGenerator.h"
 #include "SimDataFormats/CrossingFrame/interface/MixCollection.h"
 #include "SimDataFormats/CaloHit/interface/PCaloHit.h"
+#include "DataFormats/DetId/interface/DetId.h"
+#include "DataFormats/HcalDetId/interface/HcalDetId.h"
 #include <cassert>
 #include <vector>
+#include <iostream>
+using std::cout;
+using std::endl;
 
 namespace CLHEP {
   class HepRandomEngine;
@@ -113,6 +118,7 @@ public:
          needToDeleteSignal = true;
        }
        if(analogSignal != 0) { 
+         if(analogSignal->id().det()==DetId::Hcal) cout << "CaloTDigitizer:run " << HcalDetId(analogSignal->id()) << " " << *analogSignal;
          runAnalogToDigital(output,engine,analogSignal,idItr,theElectronicsSim);
          if(needToDeleteSignal) delete analogSignal;
       }
