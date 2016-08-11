@@ -9,7 +9,7 @@
 
 HcalPedestal HcalDbHardcode::makePedestal (HcalGenericDetId fId, bool fSmear) {
   HcalPedestalWidth width = makePedestalWidth (fId);
-  float value0 = fId.genericSubdet() == HcalGenericDetId::HcalGenForward ? 11. : 18.;  // fC
+  float value0 = fId.genericSubdet() == HcalGenericDetId::HcalGenForward ? 11. : 17.3;  // fC
   if (fId.genericSubdet() == HcalGenericDetId::HcalGenOuter) value0 = 10.;
   float value [4] = {value0, value0, value0, value0};
   if (fSmear) {
@@ -61,7 +61,7 @@ HcalPedestal HcalDbHardcode::makePedestal (HcalGenericDetId fId, bool fSmear, do
 	chargeToQIE *= 2*1.148;
     }
     
-    value0 = 18. + chargeToQIE;
+    value0 = 17.3 + chargeToQIE;
   }
   
 
@@ -80,8 +80,8 @@ HcalPedestal HcalDbHardcode::makePedestal (HcalGenericDetId fId, bool fSmear, do
 
 HcalPedestalWidth HcalDbHardcode::makePedestalWidth (HcalGenericDetId fId) {
   float value = 0;
-  if      (fId.genericSubdet() == HcalGenericDetId::HcalGenBarrel) value = 5.0;
-  else if (fId.genericSubdet() == HcalGenericDetId::HcalGenEndcap) value = 5.0;
+  if      (fId.genericSubdet() == HcalGenericDetId::HcalGenBarrel) value = 1.5;
+  else if (fId.genericSubdet() == HcalGenericDetId::HcalGenEndcap) value = 1.5;
   else if (fId.genericSubdet() == HcalGenericDetId::HcalGenOuter)  value = 1.5;
   else if (fId.genericSubdet() == HcalGenericDetId::HcalGenForward)value = 2.0;
   // everything in fC
@@ -106,9 +106,9 @@ HcalPedestalWidth HcalDbHardcode::makePedestalWidth (HcalGenericDetId fId, doubl
                                  // operations
   if(eff_lumi < 0.) eff_lumi = 0.;
   if      (fId.genericSubdet() == HcalGenericDetId::HcalGenBarrel) 
-    value = 5.0 + 1.7 * sqrt(eff_lumi);
+    value = 1.5 + 1.7 * sqrt(eff_lumi);
   else if (fId.genericSubdet() == HcalGenericDetId::HcalGenEndcap) 
-    value = 5.0 + 0.7 * sqrt(eff_lumi);
+    value = 1.5 + 0.7 * sqrt(eff_lumi);
   else if (fId.genericSubdet() == HcalGenericDetId::HcalGenOuter)  value = 1.5;
   else if (fId.genericSubdet() == HcalGenericDetId::HcalGenForward)value = 2.0;
   // everything in fC
@@ -535,7 +535,7 @@ HcalGain HcalDbHardcode::makeGain (HcalGenericDetId fId, bool fSmear) {
   HcalGainWidth width = makeGainWidth (fId);
   float value0 = 0;
 
-  static float const hbhevalue = 1./90./10.;  //90 is pe/GeV 10 is fC/pe.
+  static float const hbhevalue = 1./62.06/57.5;  //62.06 is pe/GeV 57.5 is fC/pe.
   if (fId.genericSubdet() == HcalGenericDetId::HcalGenBarrel) {
     HcalDetId hid(fId);
     if (hid.depth() == 1) value0 = hbhevalue;

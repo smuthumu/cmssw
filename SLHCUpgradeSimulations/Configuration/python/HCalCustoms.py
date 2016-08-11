@@ -120,10 +120,10 @@ def customise_Digi(process):
     if hasattr(process,'mix'):
         process.mix.digitizers.hcal.HBHEUpgradeQIE = True
         process.mix.digitizers.hcal.hb.siPMCells = cms.vint32([1])
-        process.mix.digitizers.hcal.hb.photoelectronsToAnalog = cms.vdouble([10.]*16)
-        process.mix.digitizers.hcal.hb.pixels = cms.int32(4500*4*2)
-        process.mix.digitizers.hcal.he.photoelectronsToAnalog = cms.vdouble([10.]*16)
-        process.mix.digitizers.hcal.he.pixels = cms.int32(4500*4*2)
+        process.mix.digitizers.hcal.hb.photoelectronsToAnalog = cms.vdouble([57.5]*16)
+        process.mix.digitizers.hcal.hb.pixels = cms.int32(27370)
+        process.mix.digitizers.hcal.he.photoelectronsToAnalog = cms.vdouble([57.5]*16)
+        process.mix.digitizers.hcal.he.pixels = cms.int32(27370)
         process.mix.digitizers.hcal.HFUpgradeQIE = True
         process.mix.digitizers.hcal.HcalReLabel.RelabelHits=cms.untracked.bool(True)
         process.mix.digitizers.hcal.doTimeSlew = False
