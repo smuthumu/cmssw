@@ -15,9 +15,6 @@ $Revision: 1.16 $
 #include <vector>
 #include <algorithm>
 #include <boost/cstdint.hpp>
-#if !defined(__CINT__) && !defined(__MAKECINT__) && !defined(__REFLEX__)
-#include <atomic>
-#endif
 
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
@@ -73,9 +70,12 @@ class HcalElectronicsMap {
   bool mapEId2tId (HcalElectronicsId fElectronicsId, HcalTrigTowerDetId fTriggerId);
   bool mapEId2chId (HcalElectronicsId fElectronicsId, DetId fId);
   // sorting
-  void sortById () const;
-  void sortByTriggerId () const;
-  void sort() {}
+  void sortById ();
+  void sortByTriggerId ();
+  void sort() {
+    sortById();
+    sortByTriggerId();
+  }
 
   class PrecisionItem { 
   public:
@@ -105,13 +105,8 @@ class HcalElectronicsMap {
   
   std::vector<PrecisionItem> mPItems;
   std::vector<TriggerItem> mTItems;
-#if !defined(__CINT__) && !defined(__MAKECINT__) && !defined(__REFLEX__)
-  mutable std::atomic<std::vector<const PrecisionItem*>*> mPItemsById COND_TRANSIENT;
-  mutable std::atomic<std::vector<const TriggerItem*>*> mTItemsByTrigId COND_TRANSIENT;
-#else
-  mutable std::vector<const PrecisionItem*>* mPItemsById COND_TRANSIENT;
-  mutable std::vector<const TriggerItem*>* mTItemsByTrigId COND_TRANSIENT;
-#endif
+  std::vector<const PrecisionItem*> mPItemsById COND_TRANSIENT;
+  std::vector<const TriggerItem*> mTItemsByTrigId COND_TRANSIENT;
 
  COND_SERIALIZABLE;
 };
