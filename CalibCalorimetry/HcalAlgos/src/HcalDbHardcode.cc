@@ -16,7 +16,8 @@ HcalDbHardcode::HcalDbHardcode()
 : theDefaultParameters_(3.0,0.5,{0.2,0.2},{0.0,0.0},0,{0.0,0.0,0.0,0.0},{0.9,0.9,0.9,0.9},125,105), //"generic" set of conditions
   setHB_(false), setHE_(false), setHF_(false), setHO_(false), 
   setHBUpgrade_(false), setHEUpgrade_(false), setHFUpgrade_(false), 
-  useHBUpgrade_(false), useHEUpgrade_(false), useHFUpgrade_(false), testHFQIE10_(false)
+  useHBUpgrade_(false), useHEUpgrade_(false), useHFUpgrade_(false), testHFQIE10_(false),
+  lumi_(0.), lumiOffset_(200.), theHBSiPMLumiDep_(1.7), theHESiPMLumiDep_(0.7)
 {
 }
 
@@ -67,6 +68,7 @@ const int HcalDbHardcode::getGainIndex(HcalGenericDetId fId){
 HcalPedestal HcalDbHardcode::makePedestal (HcalGenericDetId fId, bool fSmear) {
   HcalPedestalWidth width = makePedestalWidth (fId);
   float value0 = getParameters(fId).pedestal();
+  // Temporary disabling of lumi-dependent pedestal to avoid it being too big for TDC evaluations...
   float value [4] = {value0,value0,value0,value0};
   if (fSmear) {
     for (int i = 0; i < 4; i++) {
@@ -85,6 +87,17 @@ HcalPedestal HcalDbHardcode::makePedestal (HcalGenericDetId fId, bool fSmear) {
 HcalPedestalWidth HcalDbHardcode::makePedestalWidth (HcalGenericDetId fId) {
   float value = getParameters(fId).pedestalWidth();
   // everything in fC
+
+  // Upgrade option with lumi dependence, assuming factor ~20 for HB 
+  // while factor ~8 (~2.5 less) for HE at 3000 fb-1 
+  // Tab.1.6 (p.10) and Fig. 5.7 (p.91) of HCAL Upgrade TDR
+  double eff_lumi = std::max(lumi_ - lumiOffset_,0.0); // offset to account for actual putting of SiPMs into operations
+  if(eff_lumi > 0.){
+    if      (fId.genericSubdet() == HcalGenericDetId::HcalGenBarrel) 
+      value += theHBSiPMLumiDep_ * sqrt(eff_lumi);
+    else if (fId.genericSubdet() == HcalGenericDetId::HcalGenEndcap) 
+      value += theHESiPMLumiDep_ * sqrt(eff_lumi);
+  }
 
   HcalPedestalWidth result (fId.rawId ());
   float width2 = value*value;

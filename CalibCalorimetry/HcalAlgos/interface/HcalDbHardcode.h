@@ -55,6 +55,10 @@ class HcalDbHardcode {
     void useHEUpgrade(bool b) { useHEUpgrade_ = b; }
     void useHFUpgrade(bool b) { useHFUpgrade_ = b; }
     void testHFQIE10(bool b) { testHFQIE10_ = b; }
+    void setLumi(double lumi) { lumi_ = lumi; }
+    void setLumiOffset(double offset) { lumiOffset_ = offset; }
+    void setHBSiPMLumiDep(double dep) { theHBSiPMLumiDep_ = dep; }
+    void setHESiPMLumiDep(double dep) { theHESiPMLumiDep_ = dep; }
     
     //getters
     const bool useHBUpgrade() const { return useHBUpgrade_; }
@@ -64,6 +68,7 @@ class HcalDbHardcode {
     const int getGainIndex(HcalGenericDetId fId);
     HcalPedestal makePedestal (HcalGenericDetId fId, bool fSmear = false);
     HcalPedestalWidth makePedestalWidth (HcalGenericDetId fId);
+    HcalPedestalWidth makePedestalWidth (HcalGenericDetId fId, double lumi);
     HcalGain makeGain (HcalGenericDetId fId, bool fSmear = false);
     HcalGainWidth makeGainWidth (HcalGenericDetId fId);
     HcalQIECoder makeQIECoder (HcalGenericDetId fId);
@@ -89,6 +94,7 @@ class HcalDbHardcode {
     HcalHardcodeParameters theHBUpgradeParameters_, theHEUpgradeParameters_, theHFUpgradeParameters_;
     bool setHB_, setHE_, setHF_, setHO_, setHBUpgrade_, setHEUpgrade_, setHFUpgrade_;
     bool useHBUpgrade_, useHEUpgrade_, useHFUpgrade_, testHFQIE10_;
+    double lumi_, lumiOffset_, theHBSiPMLumiDep_, theHESiPMLumiDep_;
 };
 
 #endif

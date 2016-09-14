@@ -8,15 +8,11 @@
 #include "CLHEP/Random/RandGaussQ.h"
 using namespace std;
 
-HcalSimParameters::HcalSimParameters(double simHitToPhotoelectrons,
-				     const std::vector<double> & photoelectronsToAnalog,
-				     double samplingFactor, double timePhase,
-				     int readoutFrameSize, int binOfMaximum,
-				     bool doPhotostatistics, bool syncPhase,
-				     int firstRing, const std::vector<double> & samplingFactors,
-				     double sipmDarkCurrentuA,
-				     double sipmCrossTalk
-				     )
+HcalSimParameters::HcalSimParameters(double simHitToPhotoelectrons, const std::vector<double> & photoelectronsToAnalog,
+                 double samplingFactor, double timePhase,
+                 int readoutFrameSize, int binOfMaximum,
+                 bool doPhotostatistics, bool syncPhase,
+                 int firstRing, const std::vector<double> & samplingFactors)
 : CaloSimParameters(simHitToPhotoelectrons,  photoelectronsToAnalog[0], samplingFactor, timePhase,
                     readoutFrameSize, binOfMaximum, doPhotostatistics, syncPhase),
   theDbService(0),
@@ -25,16 +21,9 @@ HcalSimParameters::HcalSimParameters(double simHitToPhotoelectrons,
   thePE2fCByRing(photoelectronsToAnalog),
   thePixels(0),
   theSiPMSmearing(false),
-  doTimeSmear_(true),
-  theSiPMdarkCurrentuA(sipmDarkCurrentuA),
-  theSiPMcrossTalk(sipmCrossTalk)
+  doTimeSmear_(true)
 {
   defaultTimeSmearing();
-
-  edm::LogInfo("HcalSimParameters:") << " # SiPM pixels     = " << thePixels;
-  edm::LogInfo("HcalSimParameters:") << " doSiPMsmearing    = " << theSiPMSmearing;
-  edm::LogInfo("HcalSimParameters:") << " sipmDarkCurrentuA = " << theSiPMdarkCurrentuA;
-  edm::LogInfo("HcalSimParameters:") << " sipmCrossTalk     = " << theSiPMcrossTalk;
 }
 
 HcalSimParameters::HcalSimParameters(const edm::ParameterSet & p)
@@ -44,8 +33,7 @@ HcalSimParameters::HcalSimParameters(const edm::ParameterSet & p)
    theSamplingFactors( p.getParameter<std::vector<double> >("samplingFactors") ),
    thePE2fCByRing( p.getParameter<std::vector<double> >("photoelectronsToAnalog") ),
    thePixels(0), theSiPMSmearing(false),
-   doTimeSmear_( p.getParameter<bool>("timeSmearing")),
-   theSiPMdarkCurrentuA(0.),theSiPMcrossTalk(0.)
+   doTimeSmear_( p.getParameter<bool>("timeSmearing"))
 {
   if(p.exists("pixels"))
   {
@@ -54,17 +42,6 @@ HcalSimParameters::HcalSimParameters(const edm::ParameterSet & p)
   if (p.exists("doSiPMSmearing"))
     theSiPMSmearing = p.getParameter<bool>("doSiPMSmearing");
   defaultTimeSmearing();
-
-  if (p.exists("sipmDarkCurrentuA"))
-    theSiPMdarkCurrentuA = p.getParameter<double>("sipmDarkCurrentuA");
-
-  if (p.exists("sipmCrossTalk"))
-    theSiPMcrossTalk = p.getParameter<double>("sipmCrossTalk");
-
-  edm::LogInfo("HcalSimParameters:") << " # SiPM pixels     = " << thePixels;
-  edm::LogInfo("HcalSimParameters:") << " doSiPMsmearing    = " << theSiPMSmearing;
-  edm::LogInfo("HcalSimParameters:") << " sipmDarkCurrentuA = " << theSiPMdarkCurrentuA;
-  edm::LogInfo("HcalSimParameters:") << " sipmCrossTalk     = " << theSiPMcrossTalk;
 }
 
 double HcalSimParameters::simHitToPhotoelectrons(const DetId & detId) const 
