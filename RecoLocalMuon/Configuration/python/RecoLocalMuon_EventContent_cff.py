@@ -28,7 +28,6 @@ RecoLocalMuonAOD = cms.PSet(
         'keep *_cscSegments_*_*', 
         'keep *_rpcRecHits_*_*')
 )
-from Configuration.StandardSequences.Eras import eras
 def _updateOutput( era, outputPSets, commands):
    for o in outputPSets:
       era.toModify( o, outputCommands = o.outputCommands + commands )
