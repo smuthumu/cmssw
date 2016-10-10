@@ -17,6 +17,10 @@
 #include "CLHEP/Units/GlobalSystemOfUnits.h" 
 
 #include<iostream>
+#include<sstream>
+#include<algorithm>
+#include<iterator>
+#include<vector>
 
 CaloHitResponse::CaloHitResponse(const CaloVSimParameterMap * parametersMap, 
                                  const CaloVShape * shape)
@@ -139,6 +143,25 @@ CaloSamples CaloHitResponse::makeAnalogSignal(const PCaloHit & hit, CLHEP::HepRa
   for(int bin = 0; bin < result.size(); bin++) {
     result[bin] += (*shape)(binTime)* signal;
     binTime += BUNCHSPACE;
+  }
+  std::vector<double> signalTot = {result[0],result[1],result[2],result[3],result[4],result[5],result[6],result[7],result[8],result[9]};
+  std::stringstream s_signalTot      ; std::copy(signalTot.begin()             ,signalTot.end()             ,std::ostream_iterator<double>(s_signalTot, " "));
+  
+  if(detId.det()==DetId::Hcal && (detId.subdetId()==1 || detId.subdetId()==2)){
+	HcalDetId hid(hit.id());
+    edm::LogInfo("HcalHPDntuple") << "HcalHPDntuple event"                  << " " << 0                                      << "\n"
+                                  << "HcalHPDntuple id"                     << " " << hid.rawId()                            << "\n"
+                                  << "HcalHPDntuple subdet"                 << " " << hid.subdet()                           << "\n"
+                                  << "HcalHPDntuple ieta"                   << " " << hid.ieta()                             << "\n"
+                                  << "HcalHPDntuple iphi"                   << " " << hid.iphi()                             << "\n"
+                                  << "HcalHPDntuple depth"                  << " " << hid.depth()                            << "\n"
+                                  << "HcalHPDntuple energy"                 << " " << hit.energy()                           << "\n"
+                                  << "HcalHPDntuple photons"                << " " << signal                                 << "\n"
+                                  << "HcalHPDntuple time"                   << " " << hit.time()                             << "\n"
+                                  << "HcalHPDntuple tof"                    << " " << timeOfFlight(detId)                    << "\n"
+                                  << "HcalHPDntuple tzero"                  << " " << tzero                                  << "\n"
+                                  << "HcalHPDntuple signalTot"              << " " << s_signalTot.str()                      << "\n";
+  
   }
   return result;
 } 
