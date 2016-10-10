@@ -8,8 +8,38 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <unordered_map>
 
 class HcalSiPM;
+
+struct HcalSiPMntuple {
+	uint32_t id = 0;
+	int subdet = 0;
+	int ieta = 0;
+	int iphi = 0;
+	int depth = 0;
+	double fCtoGeV = 0.;
+	double samplingFactor = 0.;
+	double photoelectronsToAnalog = 0.;
+	double simhitToPhotoelectrons = 0.;
+	std::vector<double> energy;
+	std::vector<int> photons;
+	std::vector<double> time;
+	std::vector<double> tof;
+	std::vector<double> tzero;
+	std::vector<double> tzero_corrected;
+	std::vector<std::vector<double>> t_pe;
+	std::vector<std::vector<int>> t_bin;
+	std::vector<double> elapsedTime;
+	std::vector<int>    sampleBin;
+	std::vector<int>    preciseBin;
+	std::vector<int>    pe;
+	std::vector<int>    hitPixels;
+	std::vector<std::vector<double>> signal;
+	std::vector<double> signalTot;
+	int sumPE = 0;
+	int sumHits = 0;
+};
 
 namespace CLHEP {
   class HepRandomEngine;
@@ -53,7 +83,7 @@ public:
   double generatePhotonTime(CLHEP::HepRandomEngine*) const;
 
 protected:
-  virtual CaloSamples makeSiPMSignal(DetId const& id, photonTimeHist const& photons, CLHEP::HepRandomEngine*) const;
+  virtual CaloSamples makeSiPMSignal(DetId const& id, photonTimeHist const& photons, CLHEP::HepRandomEngine*);
 
 private:
   HcalSiPM * theSiPM;
@@ -68,6 +98,8 @@ private:
   HcalTDCParameters theTDCParams;
 
   const std::vector<DetId>* theDetIds;
+  std::unordered_map<uint32_t,HcalSiPMntuple> treemap;
+  int nevent;
 };
 
 #endif //HcalSimAlgos_HcalSiPMHitResponse_h
