@@ -41,22 +41,26 @@ void HcalAmplifier::setDbService(const HcalDbService * service) {
 
 
 void HcalAmplifier::amplify(CaloSamples & frame, CLHEP::HepRandomEngine* engine) const {
+  bool debugcs = ((frame[0]+frame[1]+frame[2]+frame[3]+frame[4]+frame[5]+frame[6]+frame[7]+frame[8]+frame[9])>0);
   if(theIonFeedbackSim)
   {
     theIonFeedbackSim->addThermalNoise(frame, engine);
   }
   pe2fC(frame);
+  if(debugcs) edm::LogInfo("DebugCaloSamples") << "CaloSample pe2fC: " << frame[0] << " " << frame[1] << " " << frame[2] << " " << frame[3] << " " << frame[4] << " " << frame[5] << " " << frame[6] << " " << frame[7] << " " << frame[8] << " " << frame[9];
   // don't bother for blank signals
   if(theTimeSlewSim && frame[4] > 1.e-6)
   {
     theTimeSlewSim->delay(frame, engine);
   }
+  if(debugcs) edm::LogInfo("DebugCaloSamples") << "CaloSample TimeSlew: " << frame[0] << " " << frame[1] << " " << frame[2] << " " << frame[3] << " " << frame[4] << " " << frame[5] << " " << frame[6] << " " << frame[7] << " " << frame[8] << " " << frame[9];
 
   // if we are combining pre-mixed digis, we need noise and peds
   if(theNoiseSignalGenerator==0 || preMixAdd_ || !theNoiseSignalGenerator->contains(frame.id()) )
   {
     addPedestals(frame, engine);
   }
+  if(debugcs) edm::LogInfo("DebugCaloSamples") << "CaloSample addPedestals: " << frame[0] << " " << frame[1] << " " << frame[2] << " " << frame[3] << " " << frame[4] << " " << frame[5] << " " << frame[6] << " " << frame[7] << " " << frame[8] << " " << frame[9];
   LogDebug("HcalAmplifier") << frame;
 }
 

@@ -1,3 +1,4 @@
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "SimCalorimetry/HcalSimAlgos/interface/HcalElectronicsSim.h"
 #include "DataFormats/HcalDigi/interface/HBHEDataFrame.h"
 #include "DataFormats/HcalDigi/interface/HODataFrame.h"
@@ -95,9 +96,19 @@ void HcalElectronicsSim::premix<QIE11DataFrame>(CaloSamples & frame, QIE11DataFr
 }
 
 template<class Digi>
-void HcalElectronicsSim::analogToDigitalImpl(CLHEP::HepRandomEngine* engine, CaloSamples & lf, Digi & result, double preMixFactor, unsigned preMixBits) {
-  convert<Digi>(lf, result, engine);
-  if(PreMixDigis) premix(lf,result,preMixFactor,preMixBits);
+void HcalElectronicsSim::analogToDigitalImpl(CLHEP::HepRandomEngine* engine, CaloSamples & frame, Digi & result, double preMixFactor, unsigned preMixBits) {
+  bool debugcs = ((frame[0]+frame[1]+frame[2]+frame[3]+frame[4]+frame[5]+frame[6]+frame[7]+frame[8]+frame[9])>0);
+  if(frame.id().det()==DetId::Hcal){
+    HcalDetId hid(frame.id());
+    if(debugcs) edm::LogInfo("DebugCaloSamples") << "CaloSample DetId: " << hid.rawId() << " " << hid.subdet() << " " << hid.ieta() << " " << hid.iphi() << " " << hid.depth();
+  }
+  else {
+    if(debugcs) edm::LogInfo("DebugCaloSamples") << "CaloSample DetId: " << frame.id().rawId();
+  }
+  if(debugcs) edm::LogInfo("DebugCaloSamples") << "CaloSample HitResponse: " << frame[0] << " " << frame[1] << " " << frame[2] << " " << frame[3] << " " << frame[4] << " " << frame[5] << " " << frame[6] << " " << frame[7] << " " << frame[8] << " " << frame[9];
+  convert<Digi>(frame, result, engine);
+  if(debugcs) edm::LogInfo("DebugCaloSamples") << "CaloSample fC2adc: " << result[0].adc() << " " << result[1].adc() << " " << result[2].adc() << " " << result[3].adc() << " " << result[4].adc() << " " << result[5].adc() << " " << result[6].adc() << " " << result[7].adc() << " " << result[8].adc() << " " << result[9].adc();
+  if(PreMixDigis) premix(frame,result,preMixFactor,preMixBits);
 }
 
 template<>
