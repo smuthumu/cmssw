@@ -110,6 +110,7 @@ void HcalSiPMHitResponse::add(const PCaloHit& hit, CLHEP::HepRandomEngine* engin
       LogDebug("HcalSiPMHitResponse") << " tzero: " << tzero;
       double tzero_bin(-tzero/(theTDCParams.deltaT()/TIMEMULT));
       LogDebug("HcalSiPMHitResponse") << " corrected tzero: " << tzero_bin << '\n';
+      if(tzero_bin < 0 || tzero_bin >= precisionTimedPhotons[id].size()) return;
       double t_pe(0.);
       int t_bin(0);
       for (unsigned int pe(0); pe<photons; ++pe) {
