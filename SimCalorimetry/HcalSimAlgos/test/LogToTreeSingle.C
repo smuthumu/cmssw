@@ -27,7 +27,7 @@ template <class O> O getOptionValue(const string& val){
 	return tmp;
 }
 
-void LogToTree(string name = "step2_HcalSiPMntuple"){
+void LogToTreeSingle(string name = "step2_HcalSiPMntuple"){
 	//open input text file
 	ifstream infile((name+".log").c_str());
 	string line;
@@ -43,14 +43,14 @@ void LogToTree(string name = "step2_HcalSiPMntuple"){
 	double samplingFactor = 0.;
 	double photoelectronsToAnalog = 0.;
 	double simhitToPhotoelectrons = 0.;
-	std::vector<double>* energy = 0;
-	std::vector<int>* photons = 0;
-	std::vector<double>* time = 0;
-	std::vector<double>* tof = 0;
-	std::vector<double>* tzero = 0;
-	std::vector<double>* tzero_corrected = 0;
-	std::vector<std::vector<double>>* t_pe = 0;
-	std::vector<std::vector<int>>* t_bin = 0;
+	double energy = 0.;
+	int photons = 0;
+	double time = 0.;
+	double tof = 0.;
+	double tzero = 0.;
+	double tzero_corrected = 0.;
+	std::vector<double>* t_pe = 0;
+	std::vector<int>* t_bin = 0;
 	std::vector<double>* elapsedTime = 0;
 	std::vector<int>*    sampleBin = 0;
 	std::vector<int>*    preciseBin = 0;
@@ -62,7 +62,7 @@ void LogToTree(string name = "step2_HcalSiPMntuple"){
 	int sumHits = 0;
 	
 	//create output root file and tree
-	TFile* outfile = TFile::Open((name+".root").c_str(),"RECREATE");
+	TFile* outfile = TFile::Open((name+"_single.root").c_str(),"RECREATE");
 	TTree* tree = new TTree("tree","Hcal SiPM ntuple");
 	tree->Branch("event"                 , &nevent                  , "nevent/I");
 	tree->Branch("id"                    , &id                      , "id/i");
@@ -74,14 +74,14 @@ void LogToTree(string name = "step2_HcalSiPMntuple"){
 	tree->Branch("samplingFactor"        , &samplingFactor          , "samplingFactor/D");
 	tree->Branch("photoelectronsToAnalog", &photoelectronsToAnalog  , "photoelectronsToAnalog/D");
 	tree->Branch("simhitToPhotoelectrons", &simhitToPhotoelectrons  , "simhitToPhotoelectrons/D");
-	tree->Branch("energy"                , "vector<double>"         , &energy         );
-	tree->Branch("photons"               , "vector<int>"            , &photons        );
-	tree->Branch("time"                  , "vector<double>"         , &time           );
-	tree->Branch("tof"                   , "vector<double>"         , &tof            );
-	tree->Branch("tzero"                 , "vector<double>"         , &tzero          );
-	tree->Branch("tzero_corrected"       , "vector<double>"         , &tzero_corrected);
-	tree->Branch("t_pe"                  , "vector<vector<double> >", &t_pe);
-	tree->Branch("t_bin"                 , "vector<vector<int> >"   , &t_bin);
+	tree->Branch("energy"                , &energy                  , "energy/D"      );
+	tree->Branch("photons"               , &photons                 , "photons/I"     );
+	tree->Branch("time"                  , &time                    , "time/D"        );
+	tree->Branch("tof"                   , &tof                     , "tof/D"         );
+	tree->Branch("tzero"                 , &tzero                   , "tzero/D"       );
+	tree->Branch("tzero_corrected"       , &tzero_corrected         , "tzero_corrected/D");
+	tree->Branch("t_pe"                  , "vector<double>"         , &t_pe);
+	tree->Branch("t_bin"                 , "vector<int>"            , &t_bin);
 	tree->Branch("elapsedTime"           , "vector<double>"         , &elapsedTime);
 	tree->Branch("sampleBin"             , "vector<int>"            , &sampleBin);
 	tree->Branch("preciseBin"            , "vector<int>"            , &preciseBin);
@@ -94,6 +94,7 @@ void LogToTree(string name = "step2_HcalSiPMntuple"){
 
 	//keep lines that begin with header, feed into tree
 	int nlines = 0;
+	bool doFill = true;
 	if(infile.is_open()){
 		while(getline(infile,line)){
 			++nlines;
@@ -103,8 +104,9 @@ void LogToTree(string name = "step2_HcalSiPMntuple"){
 				process(line,' ',fields);
 				if(fields.size()<3) continue;
 				if(fields[1]=="event"){
-					tree->Fill();
+					if(doFill) tree->Fill();
 					//reset
+					doFill = true;
 					id                     = 0;
 					subdet                 = 0;
 					ieta                   = 0;
@@ -117,14 +119,14 @@ void LogToTree(string name = "step2_HcalSiPMntuple"){
 					sumPE                  = 0;
 					sumHits                = 0;
 					
-					delete energy         ; energy          = new vector<double>();
-					delete photons        ; photons         = new vector<int>();
-					delete time           ; time            = new vector<double>();
-					delete tof            ; tof             = new vector<double>();
-					delete tzero          ; tzero           = new vector<double>();
-					delete tzero_corrected; tzero_corrected = new vector<double>();
-					delete t_pe           ; t_pe            = new vector<vector<double>>();
-					delete t_bin          ; t_bin           = new vector<vector<int>>();
+					energy          = 0;
+					photons         = 0;
+					time            = 0;
+					tof             = 0;
+					tzero           = 0;
+					tzero_corrected = 0;
+					delete t_pe           ; t_pe            = new vector<double>();
+					delete t_bin          ; t_bin           = new vector<int>();
 					delete elapsedTime    ; elapsedTime     = new vector<double>();
 					delete sampleBin      ; sampleBin       = new vector<int>();
 					delete preciseBin     ; preciseBin      = new vector<int>();
@@ -144,36 +146,14 @@ void LogToTree(string name = "step2_HcalSiPMntuple"){
 				else if(fields[1]=="samplingFactor"        ) samplingFactor         = getOptionValue<double>(fields[2]);
 				else if(fields[1]=="photoelectronsToAnalog") photoelectronsToAnalog = getOptionValue<double>(fields[2]);
 				else if(fields[1]=="simhitToPhotoelectrons") simhitToPhotoelectrons = getOptionValue<double>(fields[2]);
-				else if(fields[1]=="energy"                ) transform(fields.begin()+2,fields.end(),back_inserter(*energy         ),getOptionValue<double>);
-				else if(fields[1]=="photons"               ) transform(fields.begin()+2,fields.end(),back_inserter(*photons        ),getOptionValue<int>);
-				else if(fields[1]=="time"                  ) transform(fields.begin()+2,fields.end(),back_inserter(*time           ),getOptionValue<double>);
-				else if(fields[1]=="tof"                   ) transform(fields.begin()+2,fields.end(),back_inserter(*tof            ),getOptionValue<double>);
-				else if(fields[1]=="tzero"                 ) transform(fields.begin()+2,fields.end(),back_inserter(*tzero          ),getOptionValue<double>);
-				else if(fields[1]=="tzero_corrected"       ) transform(fields.begin()+2,fields.end(),back_inserter(*tzero_corrected),getOptionValue<double>);
-				else if(fields[1]=="t_pe"                  ) {
-					//nentries per vector given by photons
-					int begin = 0;
-					int end = 0;
-					for(int i = 0; i < int(photons->size()); ++i){
-						if(i>0) begin += photons->at(i-1);
-						end += photons->at(i);
-						vector<double> stmp;
-						transform(fields.begin()+2+begin,fields.begin()+2+end,back_inserter(stmp),getOptionValue<double>);
-						t_pe->push_back(stmp);
-					}
-				}
-				else if(fields[1]=="t_bin"                 ) {
-					//nentries per vector given by photons
-					int begin = 0;
-					int end = 0;
-					for(int i = 0; i < int(photons->size()); ++i){
-						if(i>0) begin += photons->at(i-1);
-						end += photons->at(i);
-						vector<int> stmp;
-						transform(fields.begin()+2+begin,fields.begin()+2+end,back_inserter(stmp),getOptionValue<int>);
-						t_bin->push_back(stmp);
-					}
-				}
+				else if(fields[1]=="energy"                ) energy                 = getOptionValue<double>(fields[2]);
+				else if(fields[1]=="photons"               ) photons                = getOptionValue<int>(fields[2]);
+				else if(fields[1]=="time"                  ) time                   = getOptionValue<double>(fields[2]);
+				else if(fields[1]=="tof"                   ) tof                    = getOptionValue<double>(fields[2]);
+				else if(fields[1]=="tzero"                 ) tzero                  = getOptionValue<double>(fields[2]);
+				else if(fields[1]=="tzero_corrected"       ){tzero_corrected        = getOptionValue<double>(fields[2]); if(fields.size()>3) doFill = false; }
+				else if(fields[1]=="t_pe"                  ) transform(fields.begin()+2,fields.end(),back_inserter(*t_pe           ),getOptionValue<double>);
+				else if(fields[1]=="t_bin"                 ) transform(fields.begin()+2,fields.end(),back_inserter(*t_bin          ),getOptionValue<int>);
 				else if(fields[1]=="elapsedTime"           ) transform(fields.begin()+2,fields.end(),back_inserter(*elapsedTime    ),getOptionValue<double>);
 				else if(fields[1]=="sampleBin"             ) transform(fields.begin()+2,fields.end(),back_inserter(*sampleBin      ),getOptionValue<int>);
 				else if(fields[1]=="preciseBin"            ) transform(fields.begin()+2,fields.end(),back_inserter(*preciseBin     ),getOptionValue<int>);
