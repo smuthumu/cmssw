@@ -26,6 +26,7 @@
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
 #include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/Common/interface/ValueMap.h"
 
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
 
@@ -103,6 +104,7 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
     public:
         explicit SmearedJetProducerT(const edm::ParameterSet& cfg):
             m_enabled(cfg.getParameter<bool>("enabled")),
+            m_store_factor(cfg.getParameter<bool>("store_factor")),
             m_useDeterministicSeed(cfg.getParameter<bool>("useDeterministicSeed")),
             m_debug(cfg.getUntrackedParameter<bool>("debug", false)) {
 
@@ -142,7 +144,8 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
                     throw edm::Exception(edm::errors::ConfigFileReadError, "Invalid value for 'variation' parameter. Only -1, 0 or 1 are supported.");
             }
 
-            produces<JetCollection>();
+            if(m_store_factor) produces<edm::ValueMap<float>>();
+            else produces<JetCollection>();
         }
 
         static void fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
@@ -150,6 +153,7 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
 
             desc.add<edm::InputTag>("src");
             desc.add<bool>("enabled");
+            desc.add<bool>("store_factor",false);
             desc.add<edm::InputTag>("rho");
             desc.add<std::int32_t>("variation", 0);
             desc.add<std::uint32_t>("seed", 37428479);
@@ -210,6 +214,7 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
                 m_genJetMatcher->getTokens(event);
 
             std::unique_ptr<JetCollection> smearedJets(new JetCollection());
+            auto jerUncVec  = std::make_unique<std::vector<double>>();
 
             for (const auto& jet: jets) {
 
@@ -274,6 +279,11 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
                     smearFactor = newSmearFactor;
                 }
 
+                if(m_store_factor){
+                    jerUncVec->push_back(smearFactor);
+                    continue;
+                }
+
                 T smearedJet = jet;
                 smearedJet.scaleEnergy(smearFactor);
 
@@ -284,10 +294,20 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
                 smearedJets->push_back(smearedJet);
             }
 
-            // Sort jets by pt
-            std::sort(smearedJets->begin(), smearedJets->end(), jetPtComparator);
+            if(m_store_factor){
+                //store uncertainty as a userfloat
+                auto out = std::make_unique<edm::ValueMap<float>>();
+                typename edm::ValueMap<float>::Filler filler(*out);
+                filler.insert(jets_collection, jerUncVec->begin(), jerUncVec->end());
+                filler.fill();
+                event.put(std::move(out),"");
+            }
+            else {
+                // Sort jets by pt
+                std::sort(smearedJets->begin(), smearedJets->end(), jetPtComparator);
 
-            event.put(std::move(smearedJets));
+                event.put(std::move(smearedJets));
+            }
         }
 
     private:
@@ -296,6 +316,7 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
         edm::EDGetTokenT<JetCollection> m_jets_token;
         edm::EDGetTokenT<double> m_rho_token;
         bool m_enabled;
+        bool m_store_factor;
         std::string m_jets_algo_pt;
         std::string m_jets_algo;
         Variation m_systematic_variation;
