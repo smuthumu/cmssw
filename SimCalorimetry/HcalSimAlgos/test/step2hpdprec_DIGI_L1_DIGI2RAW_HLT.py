@@ -31,7 +31,7 @@ process.maxEvents = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
     dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
-    fileNames = cms.untracked.vstring('file:step1.root'),
+    fileNames = cms.untracked.vstring('file:../step1_SinglePi_500GeV.root'),
     inputCommands = cms.untracked.vstring('keep *', 
         'drop *_genParticles_*_*', 
         'drop *_genParticlesForJets_*_*', 
@@ -80,7 +80,7 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(10485760),
-    fileName = cms.untracked.string('file:step2hpd.root'),
+    fileName = cms.untracked.string('file:step2hpdprec.root'),
     outputCommands = process.FEVTDEBUGHLTEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
@@ -120,3 +120,8 @@ process = load_HcalHardcode(process)
 process.es_hardcode.useHFUpgrade = cms.bool(True)
 process.es_hardcode.useHEUpgrade = cms.bool(False)
 process.mix.digitizers.hcal.he.photoelectronsToAnalog = cms.vdouble([0.3305]*14)
+
+#Setup FWK for multithreaded
+process.options.numberOfThreads=cms.untracked.uint32(6)
+process.options.numberOfStreams=cms.untracked.uint32(0)
+

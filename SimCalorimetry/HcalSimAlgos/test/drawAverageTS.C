@@ -1,7 +1,8 @@
 #include <string>
 
-void drawAverageTS(string frame="frame1", bool showData=false){
-	TFile* file = TFile::Open("step2_DebugCaloSamples.root");
+void drawAverageTS(string frame="frame1", bool showData=false, string suff=""){
+	string fname = "step2"+suff+"_DebugCaloSamples.root";
+	TFile* file = TFile::Open(fname.c_str());
 	TTree* tree = (TTree*)file->Get("tree");
 	
 	TCanvas* can = new TCanvas();

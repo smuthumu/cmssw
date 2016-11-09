@@ -58,6 +58,7 @@ void LogToTreeSingle(string name = "step2_HcalSiPMntuple"){
 	std::vector<int>*    hitPixels = 0;
 	std::vector<std::vector<double>>* signal = 0;
 	std::vector<double>* signalTot = 0;
+	std::vector<double>* signalTotPrecise = 0;
 	int sumPE = 0;
 	int sumHits = 0;
 	
@@ -89,6 +90,7 @@ void LogToTreeSingle(string name = "step2_HcalSiPMntuple"){
 	tree->Branch("hitPixels"             , "vector<int>"            , &hitPixels);
 	tree->Branch("signal"                , "vector<vector<double> >", &signal);
 	tree->Branch("signalTot"             , "vector<double>"         , &signalTot);
+	tree->Branch("signalTotPrecise"      , "vector<double>"         , &signalTotPrecise);
 	tree->Branch("sumPE"                 , &sumPE                   , "sumPE/I");
 	tree->Branch("sumHits"               , &sumHits                 , "sumHits/I");
 
@@ -125,15 +127,16 @@ void LogToTreeSingle(string name = "step2_HcalSiPMntuple"){
 					tof             = 0;
 					tzero           = 0;
 					tzero_corrected = 0;
-					delete t_pe           ; t_pe            = new vector<double>();
-					delete t_bin          ; t_bin           = new vector<int>();
-					delete elapsedTime    ; elapsedTime     = new vector<double>();
-					delete sampleBin      ; sampleBin       = new vector<int>();
-					delete preciseBin     ; preciseBin      = new vector<int>();
-					delete pe             ; pe              = new vector<int>();
-					delete hitPixels      ; hitPixels       = new vector<int>();
-					delete signal         ; signal          = new vector<vector<double>>();
-					delete signalTot      ; signalTot       = new vector<double>();
+					delete t_pe            ; t_pe            = new vector<double>();
+					delete t_bin           ; t_bin           = new vector<int>();
+					delete elapsedTime     ; elapsedTime      = new vector<double>();
+					delete sampleBin       ; sampleBin        = new vector<int>();
+					delete preciseBin      ; preciseBin       = new vector<int>();
+					delete pe              ; pe               = new vector<int>();
+					delete hitPixels       ; hitPixels        = new vector<int>();
+					delete signal          ; signal           = new vector<vector<double>>();
+					delete signalTot       ; signalTot        = new vector<double>();
+					delete signalTotPrecise; signalTotPrecise = new vector<double>();
 
 					nevent = getOptionValue<int>(fields[2]);
 				}
@@ -167,6 +170,7 @@ void LogToTreeSingle(string name = "step2_HcalSiPMntuple"){
 					}
 				}
 				else if(fields[1]=="signalTot"             ) transform(fields.begin()+2,fields.end(),back_inserter(*signalTot  ),getOptionValue<double>);
+				else if(fields[1]=="signalTotPrecise"      ) transform(fields.begin()+2,fields.end(),back_inserter(*signalTotPrecise),getOptionValue<double>);
 				else if(fields[1]=="sumPE"                 ) sumPE                  = getOptionValue<int>(fields[2]);
 				else if(fields[1]=="sumHits"               ) sumHits                = getOptionValue<int>(fields[2]);
 				

@@ -19,6 +19,7 @@
 #include <utility>
 #include <algorithm>
 #include <cstdlib>
+#include <iostream>
 
 using namespace std;
 
@@ -56,7 +57,7 @@ void plotSinglePulse(vector<double>& data, string legname, string outname){
 class DigiClass2 : public DigiClass {
 	public:
 		DigiClass2(TTree *tree=0) : DigiClass(tree) {}
-		void Loop(int cut, string plotalldir){
+		void Loop(int cut, bool hpd, string plotalldir){
 			if (fChain == 0) return;
 			
 			Long64_t nentries = fChain->GetEntriesFast();
@@ -66,8 +67,12 @@ class DigiClass2 : public DigiClass {
 				Long64_t ientry = LoadTree(jentry);
 				if (ientry < 0) break;
 				nb = fChain->GetEntry(jentry);   nbytes += nb;
+				if(jentry % 10000 == 0) cout << "Skimming " << jentry << "/" << nentries << endl;
 				if(signalTot->size()==0) continue;
-				if(signalTot->at(2) <= cut) continue; //cut on SOI
+				if(subdet!=2) continue;
+				//if(signalTot->at(4) <= cut) continue; //cut on SOI
+				if( (!hpd && (signalTot->at(4)+signalTot->at(5))*fCtoGeV*photoelectronsToAnalog <= cut) ||
+					(hpd && (signalTot->at(4)+signalTot->at(5))*0.23*0.3305 <= cut) ) continue; //cut on sim equiv of M0 energy
 				
 				stringstream ss;
 				ss << "subdet = " << subdet << " i#eta = " << ieta << " i#phi = " << iphi << " d = " << depth;
@@ -88,7 +93,8 @@ void plotPulsesCalo(string fname, int cut){
 	DigiClass2* dc = new DigiClass2(tree);
 	string plotalldir = "pulses_"+fname.substr(0,fname.size()-5);
 	system(("mkdir -p "+plotalldir).c_str());
-	dc->Loop(cut,plotalldir);
+	bool hpd = (fname.find("HPD")!=string::npos);
+	dc->Loop(cut,hpd,plotalldir);
 	system(("tar -czf "+plotalldir+".tar.gz "+plotalldir+"/").c_str());
 }
 
