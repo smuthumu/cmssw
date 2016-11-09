@@ -14,7 +14,7 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
-process.load('SimGeneral.MixingModule.mixNoPU_cfi')
+process.load('SimGeneral.MixingModule.mix_POISSON_average_cfi')
 process.load('Configuration.Geometry.GeometryExtended2017devReco_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Digi_cff')
@@ -57,13 +57,13 @@ process.options = cms.untracked.PSet(
 )
 
 #process.MessageLogger.debugModules = cms.untracked.vstring("*")
-process.MessageLogger.categories.append("HcalHPDntuple")
-process.MessageLogger.categories.append("HcalHPD2ntuple")
+process.MessageLogger.categories.append("HcalSiPMHitResponse")
+process.MessageLogger.categories.append("HcalSiPMntuple")
 process.MessageLogger.cout.threshold = cms.untracked.string("INFO")
 process.MessageLogger.cout.INFO = cms.untracked.PSet(limit = cms.untracked.int32(0))
 #process.MessageLogger.cout.DEBUG = cms.untracked.PSet(limit = cms.untracked.int32(0))
-process.MessageLogger.cout.HcalHPDntuple = cms.untracked.PSet(limit = cms.untracked.int32(-1))
-process.MessageLogger.cout.HcalHPD2ntuple = cms.untracked.PSet(limit = cms.untracked.int32(-1))
+process.MessageLogger.cout.HcalSiPMHitResponse = cms.untracked.PSet(limit = cms.untracked.int32(0))
+process.MessageLogger.cout.HcalSiPMntuple = cms.untracked.PSet(limit = cms.untracked.int32(-1))
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
@@ -80,7 +80,7 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(10485760),
-    fileName = cms.untracked.string('file:step2hpd.root'),
+    fileName = cms.untracked.string('file:step2pu.root'),
     outputCommands = process.FEVTDEBUGHLTEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
@@ -88,6 +88,21 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
 # Additional output definition
 
 # Other statements
+process.mix.input.nbPileupEvents.averageNumber = cms.double(35.000000)
+process.mix.bunchspace = cms.int32(25)
+process.mix.minBunch = cms.int32(-12)
+process.mix.maxBunch = cms.int32(3)
+process.mix.input.fileNames = cms.untracked.vstring([
+'root://eoscms.cern.ch//store/relval/CMSSW_8_1_0_pre12/RelValMinBias_13/GEN-SIM/81X_upgrade2017_HCALdev_v2_NewBPix_BpixHcalGeom-v1/00000/0EDC9546-FC8B-E611-A0C4-0025905B860E.root',
+'root://eoscms.cern.ch//store/relval/CMSSW_8_1_0_pre12/RelValMinBias_13/GEN-SIM/81X_upgrade2017_HCALdev_v2_NewBPix_BpixHcalGeom-v1/00000/1E2A782B-048C-E611-AFBB-0CC47A7C357E.root',
+'root://eoscms.cern.ch//store/relval/CMSSW_8_1_0_pre12/RelValMinBias_13/GEN-SIM/81X_upgrade2017_HCALdev_v2_NewBPix_BpixHcalGeom-v1/00000/222B375F-FD8B-E611-9285-0CC47A74527A.root',
+'root://eoscms.cern.ch//store/relval/CMSSW_8_1_0_pre12/RelValMinBias_13/GEN-SIM/81X_upgrade2017_HCALdev_v2_NewBPix_BpixHcalGeom-v1/00000/5CB0B308-FF8B-E611-A6BE-0025905B8606.root',
+'root://eoscms.cern.ch//store/relval/CMSSW_8_1_0_pre12/RelValMinBias_13/GEN-SIM/81X_upgrade2017_HCALdev_v2_NewBPix_BpixHcalGeom-v1/00000/6E736009-FF8B-E611-92B2-0025905A6104.root',
+'root://eoscms.cern.ch//store/relval/CMSSW_8_1_0_pre12/RelValMinBias_13/GEN-SIM/81X_upgrade2017_HCALdev_v2_NewBPix_BpixHcalGeom-v1/00000/740B725F-FE8B-E611-97D4-0CC47A78A42C.root',
+'root://eoscms.cern.ch//store/relval/CMSSW_8_1_0_pre12/RelValMinBias_13/GEN-SIM/81X_upgrade2017_HCALdev_v2_NewBPix_BpixHcalGeom-v1/00000/803F2E0E-FE8B-E611-8472-0025905B85DC.root',
+'root://eoscms.cern.ch//store/relval/CMSSW_8_1_0_pre12/RelValMinBias_13/GEN-SIM/81X_upgrade2017_HCALdev_v2_NewBPix_BpixHcalGeom-v1/00000/A844DBFD-FC8B-E611-AD40-0CC47A4D7632.root',
+'root://eoscms.cern.ch//store/relval/CMSSW_8_1_0_pre12/RelValMinBias_13/GEN-SIM/81X_upgrade2017_HCALdev_v2_NewBPix_BpixHcalGeom-v1/00000/AA66122D-048C-E611-A7AD-0025905A609E.root',
+])
 process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2017_hcaldev', '')
@@ -115,8 +130,9 @@ process = customizeHLTforFullSim(process)
 # End of customisation functions
 
 # Customisation from command line
-from SLHCUpgradeSimulations.Configuration.HCalCustoms import load_HcalHardcode
-process = load_HcalHardcode(process)
-process.es_hardcode.useHFUpgrade = cms.bool(True)
-process.es_hardcode.useHEUpgrade = cms.bool(False)
-process.mix.digitizers.hcal.he.photoelectronsToAnalog = cms.vdouble([0.3305]*14)
+process.mix.digitizers.hcal.he.sipmDarkCurrentuA = cms.double(0)
+
+#Setup FWK for multithreaded
+process.options.numberOfThreads=cms.untracked.uint32(6)
+process.options.numberOfStreams=cms.untracked.uint32(0)
+

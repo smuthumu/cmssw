@@ -57,13 +57,13 @@ process.options = cms.untracked.PSet(
 )
 
 #process.MessageLogger.debugModules = cms.untracked.vstring("*")
-process.MessageLogger.categories.append("HcalHPDntuple")
-process.MessageLogger.categories.append("HcalHPD2ntuple")
+process.MessageLogger.categories.append("HcalSiPMHitResponse")
+process.MessageLogger.categories.append("HcalSiPMntuple")
 process.MessageLogger.cout.threshold = cms.untracked.string("INFO")
 process.MessageLogger.cout.INFO = cms.untracked.PSet(limit = cms.untracked.int32(0))
 #process.MessageLogger.cout.DEBUG = cms.untracked.PSet(limit = cms.untracked.int32(0))
-process.MessageLogger.cout.HcalHPDntuple = cms.untracked.PSet(limit = cms.untracked.int32(-1))
-process.MessageLogger.cout.HcalHPD2ntuple = cms.untracked.PSet(limit = cms.untracked.int32(-1))
+process.MessageLogger.cout.HcalSiPMHitResponse = cms.untracked.PSet(limit = cms.untracked.int32(0))
+process.MessageLogger.cout.HcalSiPMntuple = cms.untracked.PSet(limit = cms.untracked.int32(-1))
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
@@ -80,7 +80,7 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(10485760),
-    fileName = cms.untracked.string('file:step2hpd.root'),
+    fileName = cms.untracked.string('file:step2new.root'),
     outputCommands = process.FEVTDEBUGHLTEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
@@ -115,8 +115,4 @@ process = customizeHLTforFullSim(process)
 # End of customisation functions
 
 # Customisation from command line
-from SLHCUpgradeSimulations.Configuration.HCalCustoms import load_HcalHardcode
-process = load_HcalHardcode(process)
-process.es_hardcode.useHFUpgrade = cms.bool(True)
-process.es_hardcode.useHEUpgrade = cms.bool(False)
-process.mix.digitizers.hcal.he.photoelectronsToAnalog = cms.vdouble([0.3305]*14)
+process.mix.digitizers.hcal.he.sipmDarkCurrentuA = cms.double(0)
