@@ -34,7 +34,7 @@ CaloHitResponse::CaloHitResponse(const CaloVSimParameterMap * parametersMap,
   theGeometry(0),
   theMinBunch(-10), 
   theMaxBunch(10),
-  thePhaseShift_(1.) {}
+  thePhaseShift_(1.), nevent(0) {}
 
 CaloHitResponse::CaloHitResponse(const CaloVSimParameterMap * parametersMap,
                                  const CaloShapes * shapes)
@@ -48,7 +48,7 @@ CaloHitResponse::CaloHitResponse(const CaloVSimParameterMap * parametersMap,
   theGeometry(0),
   theMinBunch(-10),
   theMaxBunch(10),
-  thePhaseShift_(1.) {}
+  thePhaseShift_(1.), nevent(0) {}
 
 CaloHitResponse::~CaloHitResponse() {
 }
@@ -66,6 +66,46 @@ void CaloHitResponse::run(MixCollection<PCaloHit> & hits, CLHEP::HepRandomEngine
       add(*hitItr, engine);
     } // loop over hits
   }
+}
+
+void CaloHitResponse::initializeHits() {
+  treemap.clear();
+}
+
+void CaloHitResponse::finalizeHits(CLHEP::HepRandomEngine* engine) {
+  for(const auto& ntup : treemap){
+    const HcalHPD2ntuple& item = ntup.second;
+	DetId detId(item.id);
+	const CaloSamples & result = *(findSignal(detId));
+    std::stringstream s_energy          ; std::copy(item.energy         .begin()       ,item.energy         .end()       ,std::ostream_iterator<double>(s_energy         , " "));
+    std::stringstream s_photons         ; std::copy(item.photons        .begin()       ,item.photons        .end()       ,std::ostream_iterator<int>(s_photons        , " "));
+    std::stringstream s_time            ; std::copy(item.time           .begin()       ,item.time           .end()       ,std::ostream_iterator<double>(s_time           , " "));
+    std::stringstream s_tof             ; std::copy(item.tof            .begin()       ,item.tof            .end()       ,std::ostream_iterator<double>(s_tof            , " "));
+    std::stringstream s_tzero           ; std::copy(item.tzero          .begin()       ,item.tzero          .end()       ,std::ostream_iterator<double>(s_tzero          , " "));
+    std::vector<double> signalTot = {result[0],result[1],result[2],result[3],result[4],result[5],result[6],result[7],result[8],result[9]};
+    std::stringstream s_signalTot       ; std::copy(signalTot.begin()             ,signalTot.end()             ,std::ostream_iterator<double>(s_signalTot, " "));
+    std::vector<double> signalTotPrecise;
+    signalTotPrecise.reserve(result.preciseSize());
+    for(int s = 0; s < result.preciseSize(); ++s){
+        signalTotPrecise.push_back(result.preciseAt(s));
+    }
+    std::stringstream s_signalTotPrecise; std::copy(signalTotPrecise.begin()      ,signalTotPrecise.end()      ,std::ostream_iterator<double>(s_signalTotPrecise, " "));
+    
+    edm::LogInfo("HcalHPD2ntuple") << "HcalHPD2ntuple event"                  << " " << nevent                      << "\n"
+                                   << "HcalHPD2ntuple id"                     << " " << item.id                     << "\n"
+                                   << "HcalHPD2ntuple subdet"                 << " " << item.subdet                 << "\n"
+                                   << "HcalHPD2ntuple ieta"                   << " " << item.ieta                   << "\n"
+                                   << "HcalHPD2ntuple iphi"                   << " " << item.iphi                   << "\n"
+                                   << "HcalHPD2ntuple depth"                  << " " << item.depth                  << "\n"
+                                   << "HcalHPD2ntuple energy"                 << " " << s_energy.str()              << "\n"
+                                   << "HcalHPD2ntuple photons"                << " " << s_photons.str()             << "\n"
+                                   << "HcalHPD2ntuple time"                   << " " << s_time.str()                << "\n"
+                                   << "HcalHPD2ntuple tof"                    << " " << s_tof.str()                 << "\n"
+                                   << "HcalHPD2ntuple tzero"                  << " " << s_tzero.str()               << "\n"
+                                   << "HcalHPD2ntuple signalTot"              << " " << s_signalTot.str()           << "\n"
+                                   << "HcalHPD2ntuple signalTotPrecise"       << " " << s_signalTotPrecise.str()    << "\n";
+  }
+  ++nevent;
 }
 
 void CaloHitResponse::add( const PCaloHit& hit, CLHEP::HepRandomEngine* engine ) {
@@ -114,7 +154,7 @@ void CaloHitResponse::add(const CaloSamples & signal)
 }
 
 
-CaloSamples CaloHitResponse::makeAnalogSignal(const PCaloHit & hit, CLHEP::HepRandomEngine* engine) const {
+CaloSamples CaloHitResponse::makeAnalogSignal(const PCaloHit & hit, CLHEP::HepRandomEngine* engine) {
 
   DetId detId(hit.id());
   const CaloSimParameters & parameters = theParameterMap->simParameters(detId);
@@ -140,12 +180,34 @@ CaloSamples CaloHitResponse::makeAnalogSignal(const PCaloHit & hit, CLHEP::HepRa
 
   CaloSamples result(makeBlankSignal(detId));
 
-  for(int bin = 0; bin < result.size(); bin++) {
-    result[bin] += (*shape)(binTime)* signal;
-    binTime += BUNCHSPACE;
+  if(detId.det()==DetId::Hcal && (detId.subdetId()==1 || detId.subdetId()==2)){
+    result.resetPrecise();
+    int sampleBin(0), preciseBin(0);
+    double const dt(0.5);
+    double const invdt(1./dt);
+    for(int bin = 0; bin < 500; bin++) {
+      preciseBin = bin;
+      sampleBin = preciseBin/50;
+      double pulseBit = (*shape)(binTime)* signal;
+      result[sampleBin] += pulseBit;
+      result.preciseAtMod(preciseBin) += pulseBit*invdt;
+      binTime += dt;
+    }	  
+  }
+  else{
+    for(int bin = 0; bin < result.size(); bin++) {
+      result[bin] += (*shape)(binTime)* signal;
+      binTime += BUNCHSPACE;
+    }
   }
   std::vector<double> signalTot = {result[0],result[1],result[2],result[3],result[4],result[5],result[6],result[7],result[8],result[9]};
   std::stringstream s_signalTot      ; std::copy(signalTot.begin()             ,signalTot.end()             ,std::ostream_iterator<double>(s_signalTot, " "));
+  std::vector<double> signalTotPrecise;
+  signalTotPrecise.reserve(result.preciseSize());
+  for(int s = 0; s < result.preciseSize(); ++s){
+	  signalTotPrecise.push_back(result.preciseAt(s));
+  }
+  std::stringstream s_signalTotPrecise; std::copy(signalTotPrecise.begin()      ,signalTotPrecise.end()      ,std::ostream_iterator<double>(s_signalTotPrecise, " "));
   
   if(detId.det()==DetId::Hcal && (detId.subdetId()==1 || detId.subdetId()==2)){
 	HcalDetId hid(hit.id());
@@ -160,8 +222,19 @@ CaloSamples CaloHitResponse::makeAnalogSignal(const PCaloHit & hit, CLHEP::HepRa
                                   << "HcalHPDntuple time"                   << " " << hit.time()                             << "\n"
                                   << "HcalHPDntuple tof"                    << " " << timeOfFlight(detId)                    << "\n"
                                   << "HcalHPDntuple tzero"                  << " " << tzero                                  << "\n"
-                                  << "HcalHPDntuple signalTot"              << " " << s_signalTot.str()                      << "\n";
-  
+                                  << "HcalHPDntuple signalTot"              << " " << s_signalTot.str()                      << "\n"
+                                  << "HcalHPDntuple signalTotPrecise"       << " " << s_signalTotPrecise.str()               << "\n";
+    HcalHPD2ntuple& ntup = treemap[hid.rawId()];
+    ntup.id = hid.rawId();
+    ntup.subdet = hid.subdet();
+    ntup.ieta  = hid.ieta();
+    ntup.iphi  = hid.iphi();
+    ntup.depth = hid.depth();
+    ntup.energy .push_back(hit.energy());
+    ntup.photons.push_back(signal);
+    ntup.time   .push_back(hit.time());
+    ntup.tof    .push_back(timeOfFlight(detId));
+    ntup.tzero  .push_back(tzero);
   }
   return result;
 } 
@@ -197,6 +270,12 @@ CaloSamples CaloHitResponse::makeBlankSignal(const DetId & detId) const {
   const CaloSimParameters & parameters = theParameterMap->simParameters(detId);
   CaloSamples result(detId, parameters.readoutFrameSize());
   result.setPresamples(parameters.binOfMaximum()-1);
+  if(detId.det()==DetId::Hcal && (detId.subdetId()==1 || detId.subdetId()==2)){
+    int preciseSize(parameters.readoutFrameSize()*50);
+    result = CaloSamples(detId,parameters.readoutFrameSize(),preciseSize);
+	result.setPresamples(parameters.binOfMaximum()-1);
+    result.setPrecise(result.presamples()*50,0.5);
+  }
   return result;
 }
 
