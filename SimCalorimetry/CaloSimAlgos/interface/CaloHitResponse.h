@@ -10,6 +10,7 @@
 
 #include<map>
 #include<vector>
+#include<unordered_map>
 
 /**
 
@@ -29,6 +30,21 @@ class CaloVSimParameterMap;
 class CaloVHitCorrection;
 class CaloVHitFilter;
 class CaloSimParameters;
+
+struct HcalHPD2ntuple {
+	uint32_t id = 0;
+	int subdet = 0;
+	int ieta = 0;
+	int iphi = 0;
+	int depth = 0;
+	std::vector<double> energy;
+	std::vector<int> photons;
+	std::vector<double> time;
+	std::vector<double> tof;
+	std::vector<double> tzero;
+	std::vector<double> signalTot;
+	std::vector<double> signalTotPrecise;
+};
 
 class CaloHitResponse 
 {
@@ -52,10 +68,10 @@ public:
   virtual bool keepBlank() const { return true ; }
 
   /// Initialize hits
-  virtual void initializeHits() {}
+  virtual void initializeHits();
 
   /// Finalize hits
-  virtual void finalizeHits(CLHEP::HepRandomEngine*) {}
+  virtual void finalizeHits(CLHEP::HepRandomEngine*);
 
   /// Complete cell digitization.
   virtual void run(MixCollection<PCaloHit> & hits, CLHEP::HepRandomEngine*);
@@ -88,7 +104,7 @@ public:
   void addHit(const PCaloHit * hit, CaloSamples & frame) const;
 
   /// creates the signal corresponding to this hit
-  virtual CaloSamples makeAnalogSignal(const PCaloHit & inputHit, CLHEP::HepRandomEngine*) const;
+  virtual CaloSamples makeAnalogSignal(const PCaloHit & inputHit, CLHEP::HepRandomEngine*);
 
   /// finds the amplitude contribution from this hit, applying
   /// photostatistics, if needed.  Results are in photoelectrons
@@ -134,7 +150,8 @@ protected:
   int theMaxBunch;
 
   double thePhaseShift_;
-
+  std::unordered_map<uint32_t,HcalHPD2ntuple> treemap;
+  int nevent;
 };
 
 #endif

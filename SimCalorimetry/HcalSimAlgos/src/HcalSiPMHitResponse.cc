@@ -68,21 +68,22 @@ void HcalSiPMHitResponse::finalizeHits(CLHEP::HepRandomEngine* engine) {
   
   for(const auto& ntup : treemap){
     const HcalSiPMntuple& item = ntup.second;
-    std::stringstream s_energy         ; std::copy(item.energy         .begin()       ,item.energy         .end()       ,std::ostream_iterator<double>(s_energy         , " "));
-    std::stringstream s_photons        ; std::copy(item.photons        .begin()       ,item.photons        .end()       ,std::ostream_iterator<int>(s_photons        , " "));
-    std::stringstream s_time           ; std::copy(item.time           .begin()       ,item.time           .end()       ,std::ostream_iterator<double>(s_time           , " "));
-    std::stringstream s_tof            ; std::copy(item.tof            .begin()       ,item.tof            .end()       ,std::ostream_iterator<double>(s_tof            , " "));
-    std::stringstream s_tzero          ; std::copy(item.tzero          .begin()       ,item.tzero          .end()       ,std::ostream_iterator<double>(s_tzero          , " "));
-    std::stringstream s_tzero_corrected; std::copy(item.tzero_corrected.begin()       ,item.tzero_corrected.end()       ,std::ostream_iterator<double>(s_tzero_corrected, " "));
-    std::stringstream s_t_pe           ; for(const auto& it_pe : item.t_pe) std::copy(it_pe.begin(),it_pe.end(),std::ostream_iterator<double>(s_t_pe, " "));
-    std::stringstream s_t_bin          ; for(const auto& it_bin : item.t_bin) std::copy(it_bin.begin(),it_bin.end(),std::ostream_iterator<int>(s_t_bin, " "));
-    std::stringstream s_elapsedTime    ; std::copy(item.elapsedTime.begin()           ,item.elapsedTime.end()           ,std::ostream_iterator<double>(s_elapsedTime, " "));
-    std::stringstream s_sampleBin      ; std::copy(item.sampleBin.begin()             ,item.sampleBin.end()             ,std::ostream_iterator<int>(s_sampleBin, " "));
-    std::stringstream s_preciseBin     ; std::copy(item.preciseBin.begin()            ,item.preciseBin.end()            ,std::ostream_iterator<int>(s_preciseBin, " "));
-    std::stringstream s_pe             ; std::copy(item.pe.begin()                    ,item.pe.end()                    ,std::ostream_iterator<int>(s_pe, " "));
-    std::stringstream s_hitPixels      ; std::copy(item.hitPixels.begin()             ,item.hitPixels.end()             ,std::ostream_iterator<int>(s_hitPixels, " "));
-    std::stringstream s_signal         ; for(const auto& isignal : item.signal) std::copy(isignal.begin(),isignal.end(),std::ostream_iterator<double>(s_signal, " "));
-    std::stringstream s_signalTot      ; std::copy(item.signalTot.begin()             ,item.signalTot.end()             ,std::ostream_iterator<double>(s_signalTot, " "));
+    std::stringstream s_energy          ; std::copy(item.energy         .begin()       ,item.energy         .end()       ,std::ostream_iterator<double>(s_energy         , " "));
+    std::stringstream s_photons         ; std::copy(item.photons        .begin()       ,item.photons        .end()       ,std::ostream_iterator<int>(s_photons        , " "));
+    std::stringstream s_time            ; std::copy(item.time           .begin()       ,item.time           .end()       ,std::ostream_iterator<double>(s_time           , " "));
+    std::stringstream s_tof             ; std::copy(item.tof            .begin()       ,item.tof            .end()       ,std::ostream_iterator<double>(s_tof            , " "));
+    std::stringstream s_tzero           ; std::copy(item.tzero          .begin()       ,item.tzero          .end()       ,std::ostream_iterator<double>(s_tzero          , " "));
+    std::stringstream s_tzero_corrected ; std::copy(item.tzero_corrected.begin()       ,item.tzero_corrected.end()       ,std::ostream_iterator<double>(s_tzero_corrected, " "));
+    std::stringstream s_t_pe            ; for(const auto& it_pe : item.t_pe) std::copy(it_pe.begin(),it_pe.end(),std::ostream_iterator<double>(s_t_pe, " "));
+    std::stringstream s_t_bin           ; for(const auto& it_bin : item.t_bin) std::copy(it_bin.begin(),it_bin.end(),std::ostream_iterator<int>(s_t_bin, " "));
+    std::stringstream s_elapsedTime     ; std::copy(item.elapsedTime.begin()           ,item.elapsedTime.end()           ,std::ostream_iterator<double>(s_elapsedTime, " "));
+    std::stringstream s_sampleBin       ; std::copy(item.sampleBin.begin()             ,item.sampleBin.end()             ,std::ostream_iterator<int>(s_sampleBin, " "));
+    std::stringstream s_preciseBin      ; std::copy(item.preciseBin.begin()            ,item.preciseBin.end()            ,std::ostream_iterator<int>(s_preciseBin, " "));
+    std::stringstream s_pe              ; std::copy(item.pe.begin()                    ,item.pe.end()                    ,std::ostream_iterator<int>(s_pe, " "));
+    std::stringstream s_hitPixels       ; std::copy(item.hitPixels.begin()             ,item.hitPixels.end()             ,std::ostream_iterator<int>(s_hitPixels, " "));
+    std::stringstream s_signal          ; for(const auto& isignal : item.signal) std::copy(isignal.begin(),isignal.end(),std::ostream_iterator<double>(s_signal, " "));
+    std::stringstream s_signalTot       ; std::copy(item.signalTot.begin()             ,item.signalTot.end()             ,std::ostream_iterator<double>(s_signalTot, " "));
+    std::stringstream s_signalTotPrecise; std::copy(item.signalTotPrecise.begin()      ,item.signalTotPrecise.end()      ,std::ostream_iterator<double>(s_signalTotPrecise, " "));
     
     edm::LogInfo("HcalSiPMntuple") << "HcalSiPMntuple event"                  << " " << nevent                      << "\n"
                                    << "HcalSiPMntuple id"                     << " " << item.id                     << "\n"
@@ -109,6 +110,7 @@ void HcalSiPMHitResponse::finalizeHits(CLHEP::HepRandomEngine* engine) {
                                    << "HcalSiPMntuple hitPixels"              << " " << s_hitPixels.str()           << "\n"
                                    << "HcalSiPMntuple signal"                 << " " << s_signal.str()              << "\n"
                                    << "HcalSiPMntuple signalTot"              << " " << s_signalTot.str()           << "\n"
+                                   << "HcalSiPMntuple signalTotPrecise"       << " " << s_signalTotPrecise.str()    << "\n"
                                    << "HcalSiPMntuple sumPE"                  << " " << item.sumPE                  << "\n" 
                                    << "HcalSiPMntuple sumHits"                << " " << item.sumHits                << "\n"; 
   }
@@ -185,8 +187,8 @@ void HcalSiPMHitResponse::add(const PCaloHit& hit, CLHEP::HepRandomEngine* engin
       std::vector<int> vt_bin;
       for (unsigned int pe(0); pe<photons; ++pe) {
         t_pe = generatePhotonTime(engine);
-        t_bin = int(t_pe/(theTDCParams.deltaT()/TIMEMULT) + tzero_bin + 0.5);
-        LogDebug("HcalSiPMHitResponse") << "t_pe: " << t_pe << " t_pe + tzero: " << (t_pe+tzero_bin*(theTDCParams.deltaT()/TIMEMULT))
+        t_bin = int(t_pe/(theTDCParams.deltaT()/TIMEMULT)  + tzero_bin + 0.5);
+        LogDebug("HcalSiPMHitResponse") << "t_pe: " << t_pe << " t_pe + tzero: " << (t_pe+tzero_bin*(theTDCParams.deltaT()/TIMEMULT) )
                   << " t_bin: " << t_bin << '\n';
         vt_pe.push_back(t_pe);
         vt_bin.push_back(t_bin);
@@ -349,6 +351,10 @@ CaloSamples HcalSiPMHitResponse::makeSiPMSignal(DetId const& id,
   ntup.sumPE = sumPE;
   ntup.sumHits = sumHits;
   ntup.signalTot = {signal[0],signal[1],signal[2],signal[3],signal[4],signal[5],signal[6],signal[7],signal[8],signal[9]};
+  ntup.signalTotPrecise.reserve(signal.preciseSize());
+  for(int s = 0; s < signal.preciseSize(); ++s){
+	  ntup.signalTotPrecise.push_back(signal.preciseAt(s));
+  }
 
   return signal;
 }
