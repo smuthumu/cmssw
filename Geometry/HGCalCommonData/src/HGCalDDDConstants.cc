@@ -767,10 +767,15 @@ bool HGCalDDDConstants::waferInLayer(int wafer, int lay) const {
     else                                    cornerAll = false;
   }
   bool   in(false);
-  if (hgpar_->mode_ == static_cast<int> (HGCalGeometryMode::Hexagon)) 
+  if (hgpar_->mode_ == static_cast<int> (HGCalGeometryMode::Hexagon)){
     in = cornerAll;
+    //restore old behavior for v7 geom
+    const double rpos = std::sqrt(waferX*waferX+waferY*waferY);
+    in = (rpos-rr >= hgpar_->rMinLayHex_[lay] && rpos+rr <= hgpar_->rMaxLayHex_[lay]);
+  }
   else if (hgpar_->mode_ == static_cast<int> (HGCalGeometryMode::HexagonFull))
     in = cornerOne;
+
   return in;
 }
 
