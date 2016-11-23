@@ -7,7 +7,7 @@ import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('HLT',eras.Run2_2017_HCALdev)
+process = cms.Process('HLT',eras.Run2_2017)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -15,12 +15,12 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-process.load('Configuration.Geometry.GeometryExtended2017devReco_cff')
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.Digi_cff')
 process.load('Configuration.StandardSequences.SimL1Emulator_cff')
 process.load('Configuration.StandardSequences.DigiToRaw_cff')
-process.load('HLTrigger.Configuration.HLT_Fake_cff')
+process.load('HLTrigger.Configuration.HLT_GRun_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
@@ -31,7 +31,7 @@ process.maxEvents = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
     dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
-    fileNames = cms.untracked.vstring('file:../step1_SinglePi_500GeV.root'),
+    fileNames = cms.untracked.vstring('file:step1_SinglePiE500.root'),
     inputCommands = cms.untracked.vstring('keep *', 
         'drop *_genParticles_*_*', 
         'drop *_genParticlesForJets_*_*', 
@@ -90,7 +90,7 @@ process.FEVTDEBUGHLToutput = cms.OutputModule("PoolOutputModule",
 # Other statements
 process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2017_hcaldev', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '81X_upgrade2017_realistic_v23', '')
 
 # Path and EndPath definitions
 process.digitisation_step = cms.Path(process.pdigi_valid)
@@ -115,7 +115,12 @@ process = customizeHLTforFullSim(process)
 # End of customisation functions
 
 # Customisation from command line
-process.mix.digitizers.hcal.he.sipmDarkCurrentuA = cms.double(0)
+from SLHCUpgradeSimulations.Configuration.HCalCustoms import load_HcalHardcode
+process = load_HcalHardcode(process)
+process.es_hardcode.useHEUpgrade = cms.bool(True)
+process.es_hardcode.useHFUpgrade = cms.bool(True)
+process.es_hardcode.heUpgrade.darkCurrent = cms.double(0)
+process.es_hardcode.toGet = cms.untracked.vstring('GainWidths','SiPMParameters','SiPMCharacteristics')
 
 #Setup FWK for multithreaded
 process.options.numberOfThreads=cms.untracked.uint32(6)

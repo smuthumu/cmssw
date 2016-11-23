@@ -51,6 +51,7 @@ void LogToTree(string name = "step2_HcalSiPMntuple"){
 	std::vector<double>* tzero_corrected = 0;
 	std::vector<std::vector<double>>* t_pe = 0;
 	std::vector<std::vector<int>>* t_bin = 0;
+	int npixels = 0;
 	std::vector<double>* elapsedTime = 0;
 	std::vector<int>*    sampleBin = 0;
 	std::vector<int>*    preciseBin = 0;
@@ -83,6 +84,7 @@ void LogToTree(string name = "step2_HcalSiPMntuple"){
 	tree->Branch("tzero_corrected"       , "vector<double>"         , &tzero_corrected);
 	tree->Branch("t_pe"                  , "vector<vector<double> >", &t_pe);
 	tree->Branch("t_bin"                 , "vector<vector<int> >"   , &t_bin);
+	tree->Branch("npixels"               , &npixels                 , "npixels/I");
 	tree->Branch("elapsedTime"           , "vector<double>"         , &elapsedTime);
 	tree->Branch("sampleBin"             , "vector<int>"            , &sampleBin);
 	tree->Branch("preciseBin"            , "vector<int>"            , &preciseBin);
@@ -118,6 +120,7 @@ void LogToTree(string name = "step2_HcalSiPMntuple"){
 					simhitToPhotoelectrons = 0;
 					sumPE                  = 0;
 					sumHits                = 0;
+					npixels                = 0;
 					
 					delete energy          ; energy           = new vector<double>();
 					delete photons         ; photons          = new vector<int>();
@@ -177,6 +180,7 @@ void LogToTree(string name = "step2_HcalSiPMntuple"){
 						t_bin->push_back(stmp);
 					}
 				}
+				else if(fields[1]=="npixels"               ) npixels                = getOptionValue<int>(fields[2]);
 				else if(fields[1]=="elapsedTime"           ) transform(fields.begin()+2,fields.end(),back_inserter(*elapsedTime    ),getOptionValue<double>);
 				else if(fields[1]=="sampleBin"             ) transform(fields.begin()+2,fields.end(),back_inserter(*sampleBin      ),getOptionValue<int>);
 				else if(fields[1]=="preciseBin"            ) transform(fields.begin()+2,fields.end(),back_inserter(*preciseBin     ),getOptionValue<int>);

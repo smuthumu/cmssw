@@ -136,6 +136,7 @@ void HcalSiPMHitResponse::add(const PCaloHit& hit, CLHEP::HepRandomEngine* engin
       double signal(analogSignalAmplitude(id, hit.energy(), pars, engine)*(1-pars.sipmCrossTalk(id)));
       unsigned int photons(signal + 0.5);
       double time( hit.time() );
+      //double time( timeOfFlight(id) );
 
       if (photons > 0)
         if (precisionTimedPhotons.find(id)==precisionTimedPhotons.end()) {
@@ -174,7 +175,7 @@ void HcalSiPMHitResponse::add(const PCaloHit& hit, CLHEP::HepRandomEngine* engin
                 << " binOfMaximum: " << pars.binOfMaximum()
                 << " phaseShift: " << thePhaseShift_;
       double tzero(0.0*Y11TIMETORISE + pars.timePhase() - 
-                   (hit.time() - timeOfFlight(id)) - 
+                   (time - timeOfFlight(id)) - 
                    BUNCHSPACE*( pars.binOfMaximum() - thePhaseShift_));
       LogDebug("HcalSiPMHitResponse") << " tzero: " << tzero;
       ntup.tzero.push_back(tzero);
@@ -286,6 +287,7 @@ CaloSamples HcalSiPMHitResponse::makeSiPMSignal(DetId const& id,
   LogDebug("HcalSiPMHitResponse") << "makeSiPMSignal for " << HcalDetId(id);
 
   HcalSiPMntuple& ntup = treemap[id.rawId()];
+  ntup.npixels = theSiPM->getNCells();
   for (unsigned int tbin(0); tbin < photonTimeBins.size(); ++tbin) {
     CaloSamples signaltmp( makeBlankSignal(id) );
     signaltmp.resetPrecise();

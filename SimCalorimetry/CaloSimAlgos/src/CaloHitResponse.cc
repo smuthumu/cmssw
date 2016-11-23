@@ -161,10 +161,11 @@ CaloSamples CaloHitResponse::makeAnalogSignal(const PCaloHit & hit, CLHEP::HepRa
   double signal = analogSignalAmplitude(detId, hit.energy(), parameters, engine);
 
   double time = hit.time();
+  //double time = timeOfFlight(detId);
   if(theHitCorrection != 0) {
     time += theHitCorrection->delay(hit, engine);
   }
-  double jitter = hit.time() - timeOfFlight(detId);
+  double jitter = time - timeOfFlight(detId);
 
   const CaloVShape * shape = theShape;
   if(!shape) {
@@ -219,7 +220,7 @@ CaloSamples CaloHitResponse::makeAnalogSignal(const PCaloHit & hit, CLHEP::HepRa
                                   << "HcalHPDntuple depth"                  << " " << hid.depth()                            << "\n"
                                   << "HcalHPDntuple energy"                 << " " << hit.energy()                           << "\n"
                                   << "HcalHPDntuple photons"                << " " << signal                                 << "\n"
-                                  << "HcalHPDntuple time"                   << " " << hit.time()                             << "\n"
+                                  << "HcalHPDntuple time"                   << " " << time                                   << "\n"
                                   << "HcalHPDntuple tof"                    << " " << timeOfFlight(detId)                    << "\n"
                                   << "HcalHPDntuple tzero"                  << " " << tzero                                  << "\n"
                                   << "HcalHPDntuple signalTot"              << " " << s_signalTot.str()                      << "\n"
@@ -232,7 +233,7 @@ CaloSamples CaloHitResponse::makeAnalogSignal(const PCaloHit & hit, CLHEP::HepRa
     ntup.depth = hid.depth();
     ntup.energy .push_back(hit.energy());
     ntup.photons.push_back(signal);
-    ntup.time   .push_back(hit.time());
+    ntup.time   .push_back(time);
     ntup.tof    .push_back(timeOfFlight(detId));
     ntup.tzero  .push_back(tzero);
   }

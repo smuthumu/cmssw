@@ -30,6 +30,7 @@ struct HcalSiPMntuple {
 	std::vector<double> tzero_corrected;
 	std::vector<std::vector<double>> t_pe;
 	std::vector<std::vector<int>> t_bin;
+	int npixels = 0;
 	std::vector<double> elapsedTime;
 	std::vector<int>    sampleBin;
 	std::vector<int>    preciseBin;
