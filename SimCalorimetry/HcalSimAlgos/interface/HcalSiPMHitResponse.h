@@ -36,7 +36,6 @@ struct HcalSiPMntuple {
 	std::vector<int>    preciseBin;
 	std::vector<int>    pe;
 	std::vector<int>    hitPixels;
-	std::vector<std::vector<double>> signal;
 	std::vector<double> signalTot;
 	std::vector<double> signalTotPrecise;
 	int sumPE = 0;

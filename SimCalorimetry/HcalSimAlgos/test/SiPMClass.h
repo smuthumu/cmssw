@@ -50,7 +50,6 @@ public :
    vector<int>     *preciseBin;
    vector<int>     *pe;
    vector<int>     *hitPixels;
-   vector<vector<double> > *signal;
    vector<double>  *signalTot;
    vector<double>  *signalTotPrecise;
    Int_t           sumPE;
@@ -81,7 +80,6 @@ public :
    TBranch        *b_preciseBin;   //!
    TBranch        *b_pe;   //!
    TBranch        *b_hitPixels;   //!
-   TBranch        *b_signal;   //!
    TBranch        *b_signalTot;   //!
    TBranch        *b_signalTotPrecise;   //!
    TBranch        *b_sumPE;   //!
@@ -165,7 +163,6 @@ void SiPMClass::Init(TTree *tree)
    preciseBin = 0;
    pe = 0;
    hitPixels = 0;
-   signal = 0;
    signalTot = 0;
    signalTotPrecise = 0;
    // Set branch addresses and branch pointers
@@ -198,7 +195,6 @@ void SiPMClass::Init(TTree *tree)
    fChain->SetBranchAddress("preciseBin", &preciseBin, &b_preciseBin);
    fChain->SetBranchAddress("pe", &pe, &b_pe);
    fChain->SetBranchAddress("hitPixels", &hitPixels, &b_hitPixels);
-   fChain->SetBranchAddress("signal", &signal, &b_signal);
    fChain->SetBranchAddress("signalTot", &signalTot, &b_signalTot);
    fChain->SetBranchAddress("signalTotPrecise", &signalTotPrecise, &b_signalTotPrecise);
    fChain->SetBranchAddress("sumPE", &sumPE, &b_sumPE);

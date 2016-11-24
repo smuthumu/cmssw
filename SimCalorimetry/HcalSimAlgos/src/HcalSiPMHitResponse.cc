@@ -81,7 +81,6 @@ void HcalSiPMHitResponse::finalizeHits(CLHEP::HepRandomEngine* engine) {
     std::stringstream s_preciseBin      ; std::copy(item.preciseBin.begin()            ,item.preciseBin.end()            ,std::ostream_iterator<int>(s_preciseBin, " "));
     std::stringstream s_pe              ; std::copy(item.pe.begin()                    ,item.pe.end()                    ,std::ostream_iterator<int>(s_pe, " "));
     std::stringstream s_hitPixels       ; std::copy(item.hitPixels.begin()             ,item.hitPixels.end()             ,std::ostream_iterator<int>(s_hitPixels, " "));
-    std::stringstream s_signal          ; for(const auto& isignal : item.signal) std::copy(isignal.begin(),isignal.end(),std::ostream_iterator<double>(s_signal, " "));
     std::stringstream s_signalTot       ; std::copy(item.signalTot.begin()             ,item.signalTot.end()             ,std::ostream_iterator<double>(s_signalTot, " "));
     std::stringstream s_signalTotPrecise; std::copy(item.signalTotPrecise.begin()      ,item.signalTotPrecise.end()      ,std::ostream_iterator<double>(s_signalTotPrecise, " "));
     
@@ -108,7 +107,6 @@ void HcalSiPMHitResponse::finalizeHits(CLHEP::HepRandomEngine* engine) {
                                    << "HcalSiPMntuple preciseBin"             << " " << s_preciseBin.str()          << "\n"
                                    << "HcalSiPMntuple pe"                     << " " << s_pe.str()                  << "\n"
                                    << "HcalSiPMntuple hitPixels"              << " " << s_hitPixels.str()           << "\n"
-                                   << "HcalSiPMntuple signal"                 << " " << s_signal.str()              << "\n"
                                    << "HcalSiPMntuple signalTot"              << " " << s_signalTot.str()           << "\n"
                                    << "HcalSiPMntuple signalTotPrecise"       << " " << s_signalTotPrecise.str()    << "\n"
                                    << "HcalSiPMntuple sumPE"                  << " " << item.sumPE                  << "\n" 
@@ -289,8 +287,6 @@ CaloSamples HcalSiPMHitResponse::makeSiPMSignal(DetId const& id,
   HcalSiPMntuple& ntup = treemap[id.rawId()];
   ntup.npixels = theSiPM->getNCells();
   for (unsigned int tbin(0); tbin < photonTimeBins.size(); ++tbin) {
-    CaloSamples signaltmp( makeBlankSignal(id) );
-    signaltmp.resetPrecise();
     pe = photonTimeBins[tbin];
     sumPE += pe;
     preciseBin = tbin/TIMEMULT;
@@ -312,42 +308,33 @@ CaloSamples HcalSiPMHitResponse::makeSiPMSignal(DetId const& id,
         pulses.push_back( std::pair<double, double>(elapsedTime, hitPixels) );
       } else {
         signal[sampleBin] += hitPixels;
-        signaltmp[sampleBin] += hitPixels;
         hitPixels *= invdt;
         signal.preciseAtMod(preciseBin) += 0.6*hitPixels;
-        signaltmp.preciseAtMod(preciseBin) += 0.6*hitPixels;
         if (preciseBin > 0)
           signal.preciseAtMod(preciseBin-1) += 0.2*hitPixels;
-          signaltmp.preciseAtMod(preciseBin-1) += 0.2*hitPixels;
         if (preciseBin < signal.preciseSize() -1)
           signal.preciseAtMod(preciseBin+1) += 0.2*hitPixels;
-          signaltmp.preciseAtMod(preciseBin+1) += 0.2*hitPixels;
       }
-    
-      if (pars.doSiPMSmearing()) {
-        pulse = pulses.begin();
-        while (pulse != pulses.end()) {
-          timeDiff = elapsedTime - pulse->first;
-          pulseBit = sipmPulseShape(timeDiff)*pulse->second;
-          LogDebug("HcalSiPMHitResponse") << " pulse t: " << pulse->first 
-                                          << " pulse A: " << pulse->second
-                                          << " timeDiff: " << timeDiff
-                                          << " pulseBit: " << pulseBit;
-          signal[sampleBin] += pulseBit;
-          signaltmp[sampleBin] += pulseBit;
-          signal.preciseAtMod(preciseBin) += pulseBit*invdt;
-          signaltmp.preciseAtMod(preciseBin) += pulseBit*invdt;
-      
-          if (timeDiff > 1 && sipmPulseShape(timeDiff) < 1e-6)
-            pulse = pulses.erase(pulse);
-          else
-            ++pulse;
-        }
-      }
-
-      ntup.signal.push_back({signaltmp[0],signaltmp[1],signaltmp[2],signaltmp[3],signaltmp[4],signaltmp[5],signaltmp[6],signaltmp[7],signaltmp[8],signaltmp[9]});
     }
     
+    if (pars.doSiPMSmearing()) {
+      pulse = pulses.begin();
+      while (pulse != pulses.end()) {
+        timeDiff = elapsedTime - pulse->first;
+        pulseBit = sipmPulseShape(timeDiff)*pulse->second;
+        LogDebug("HcalSiPMHitResponse") << " pulse t: " << pulse->first 
+                                        << " pulse A: " << pulse->second
+                                        << " timeDiff: " << timeDiff
+                                        << " pulseBit: " << pulseBit;
+        signal[sampleBin] += pulseBit;
+        signal.preciseAtMod(preciseBin) += pulseBit*invdt;
+    
+        if (timeDiff > 1 && sipmPulseShape(timeDiff) < 1e-6)
+          pulse = pulses.erase(pulse);
+        else
+          ++pulse;
+      }
+    }
     elapsedTime += dt;
   }
   ntup.sumPE = sumPE;
