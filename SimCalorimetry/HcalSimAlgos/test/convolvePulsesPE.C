@@ -19,7 +19,7 @@ using namespace std;
 
 typedef std::vector<unsigned int> photonTimeHist;
 
-const unsigned nbin(128);
+const unsigned nbin(250);
 static double const root2(sqrt(2));
 
 double Y11TimePDF(double t) {
@@ -27,7 +27,7 @@ double Y11TimePDF(double t) {
 }
 
 //static const double Y11RANGE(80.);
-static const double Y11RANGE(nbin);
+static const double Y11RANGE(nbin*2);
 static const double Y11MAX(0.04);
 
 double generatePhotonTime(TRandom3* random) {
@@ -53,7 +53,7 @@ double analyticPulseShapeHE(double t) {
 }
 
 //const int nBins_(35*2+1);
-const int nBins_(nbin*2);
+const int nBins_(nbin*4);
 vector<double> shape(nBins_,0.);
 bool computedShape = false;
 vector<double>& computeShape(){
@@ -67,7 +67,9 @@ vector<double>& computeShape(){
 	
 	for (int j = 0; j < nBins_; ++j) {
 		shape[j] /= norm;
+		//cout << shape[j] << ", ";
 	}
+	//cout << endl;
 	
 	computedShape = true;
 	return shape;
@@ -112,7 +114,7 @@ void convolvePulsesPE(unsigned nevents=1e6,unsigned npe=200){
 		h2->SetBinContent(i+1,Y11TimePDF((double)i));
 	}
 	
-	TH1F* hresult = new TH1F("hresult","",nbin,-0.5,double(nbin)-0.5);
+	TH1F* hresult = new TH1F("hresult","",250,-0.5,250-0.5);
 	for(unsigned i = 0; i < nevents; ++i){
 		if(i % 10000 == 0) cout << "Generating " << i << "/" << nevents << endl;
 		
@@ -141,7 +143,8 @@ void convolvePulsesPE(unsigned nevents=1e6,unsigned npe=200){
 				double pulseBit = getShape(timeDiff)*pulse->second;
 				signal[tbin] += pulseBit*invdt;
 			
-				if (timeDiff > 1 && getShape(timeDiff) < 1e-6)
+				//if (timeDiff > 1 && getShape(timeDiff) < 1e-6)
+				if (timeDiff > 1 && getShape(timeDiff) < 1e-10)
 					pulse = pulses.erase(pulse);
 				else
 					++pulse;
@@ -154,7 +157,7 @@ void convolvePulsesPE(unsigned nevents=1e6,unsigned npe=200){
 	}
 
 	//normalize
-	hresult->Scale(1./hresult->Integral(0,nbin+1));
+	hresult->Scale(1./hresult->Integral(0,hresult->GetNbinsX()+1));
 	hresult->SetLineColor(kBlack);
 	hresult->SetLineWidth(2);
 	
@@ -211,7 +214,8 @@ void convolvePulsesPE(unsigned nevents=1e6,unsigned npe=200){
 	
 	//just print central region
 	for(int i = 1; i <= nbin; ++i){
-		cout << hresult->GetBinContent(i) << ", ";
+		//cout << hresult->GetBinContent(i) << ", ";
+		cout << result[i] << ", ";
 	}
 	cout << endl;
 

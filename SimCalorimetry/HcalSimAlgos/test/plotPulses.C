@@ -60,20 +60,23 @@ void fillHisto(TH1F* histo, vector<double>& signalTot, double tbin){
 	}
 }
 
-void fillHistos(HistoMap& hmap, vector<double>& signalTotPrecise, vector<double>& signalTot, int depth, double gain, int subdet){
+void fillHistos(HistoMap& hmap, vector<double>& signalTotPrecise, vector<double>& signalTot, int depth, double gain, int subdet, bool hpd){
 	if(subdet!=2) return;
 	double EM0 = (signalTot[4]+signalTot[5])*gain;
+	
+	double dt = 0.5;
+	if(hpd) dt = 1.0;
 	
 	//first find depth-independent histos
 	BinIndex bin0(0,EM0,EM0);
 	HistoPair hpair0 = getHistos(hmap,bin0);
-	fillHisto(hpair0.first,signalTotPrecise,0.5);
+	fillHisto(hpair0.first,signalTotPrecise,dt);
 	fillHisto(hpair0.second,signalTot,25.);
 	
 	//now find depth-dependent histos
 	BinIndex bin(depth,EM0,EM0);
 	HistoPair hpair = getHistos(hmap,bin);
-	fillHisto(hpair.first,signalTotPrecise,0.5);
+	fillHisto(hpair.first,signalTotPrecise,dt);
 	fillHisto(hpair.second,signalTot,25.);
 }
 
@@ -91,7 +94,7 @@ class SiPMClass2 : public SiPMClass {
 				nb = fChain->GetEntry(jentry);   nbytes += nb;
 				if(jentry % 10000 == 0) cout << "Processing " << jentry << "/" << nentries << endl;
 				
-				fillHistos(hmap,*signalTotPrecise,*signalTot,depth,fCtoGeV*photoelectronsToAnalog,subdet);				
+				fillHistos(hmap,*signalTotPrecise,*signalTot,depth,fCtoGeV*photoelectronsToAnalog,subdet,false);				
 			}
 		}
 };
@@ -109,7 +112,7 @@ class HPD2Class2 : public HPD2Class {
 				nb = fChain->GetEntry(jentry);   nbytes += nb;
 				if(jentry % 10000 == 0) cout << "Processing " << jentry << "/" << nentries << endl;
 				
-				fillHistos(hmap,*signalTotPrecise,*signalTot,depth,0.23*0.3305,subdet);				
+				fillHistos(hmap,*signalTotPrecise,*signalTot,depth,0.23*0.3305,subdet,true);
 			}
 		}
 };
