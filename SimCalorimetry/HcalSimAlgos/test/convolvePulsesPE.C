@@ -19,7 +19,7 @@ using namespace std;
 
 typedef std::vector<unsigned int> photonTimeHist;
 
-const unsigned nbin(250);
+unsigned nbin(250);
 static double const root2(sqrt(2));
 
 double Y11TimePDF(double t) {
@@ -27,7 +27,7 @@ double Y11TimePDF(double t) {
 }
 
 //static const double Y11RANGE(80.);
-static const double Y11RANGE(nbin*2);
+static const double Y11RANGE(nbin);
 static const double Y11MAX(0.04);
 
 double generatePhotonTime(TRandom3* random) {
@@ -53,7 +53,7 @@ double analyticPulseShapeHE(double t) {
 }
 
 //const int nBins_(35*2+1);
-const int nBins_(nbin*4);
+const int nBins_(nbin*2);
 vector<double> shape(nBins_,0.);
 bool computedShape = false;
 vector<double>& computeShape(){
@@ -144,7 +144,7 @@ void convolvePulsesPE(unsigned nevents=1e6,unsigned npe=200){
 				signal[tbin] += pulseBit*invdt;
 			
 				//if (timeDiff > 1 && getShape(timeDiff) < 1e-6)
-				if (timeDiff > 1 && getShape(timeDiff) < 1e-10)
+				if (timeDiff > 1 && getShape(timeDiff) < 1e-7)
 					pulse = pulses.erase(pulse);
 				else
 					++pulse;
@@ -162,8 +162,9 @@ void convolvePulsesPE(unsigned nevents=1e6,unsigned npe=200){
 	hresult->SetLineWidth(2);
 	
 	//for plotting
-	double x[nbin] = {};
-	double yconv[nbin] = {};
+	nbin = 250;
+	double *x = new double[nbin];
+	double *yconv = new double[nbin];
 	double sconv = 0;
 	for(unsigned i = 0; i < nbin; ++i){
 		x[i] = i;
