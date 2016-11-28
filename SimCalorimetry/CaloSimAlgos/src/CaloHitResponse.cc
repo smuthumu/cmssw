@@ -184,16 +184,16 @@ CaloSamples CaloHitResponse::makeAnalogSignal(const PCaloHit & hit, CLHEP::HepRa
   if(detId.det()==DetId::Hcal && (detId.subdetId()==1 || detId.subdetId()==2)){
     result.resetPrecise();
     int sampleBin(0), preciseBin(0);
-    double const dt(0.5);
+    double const dt(1.0);
     double const invdt(1./dt);
-    for(int bin = 0; bin < 500; bin++) {
+    for(int bin = 0; bin < 250; bin++) {
       preciseBin = bin;
-      sampleBin = preciseBin/50;
+      sampleBin = preciseBin/25;
       double pulseBit = (*shape)(binTime)* signal;
       result[sampleBin] += pulseBit;
       result.preciseAtMod(preciseBin) += pulseBit*invdt;
       binTime += dt;
-    }	  
+    }
   }
   else{
     for(int bin = 0; bin < result.size(); bin++) {
@@ -272,10 +272,10 @@ CaloSamples CaloHitResponse::makeBlankSignal(const DetId & detId) const {
   CaloSamples result(detId, parameters.readoutFrameSize());
   result.setPresamples(parameters.binOfMaximum()-1);
   if(detId.det()==DetId::Hcal && (detId.subdetId()==1 || detId.subdetId()==2)){
-    int preciseSize(parameters.readoutFrameSize()*50);
+    int preciseSize(parameters.readoutFrameSize()*25);
     result = CaloSamples(detId,parameters.readoutFrameSize(),preciseSize);
 	result.setPresamples(parameters.binOfMaximum()-1);
-    result.setPrecise(result.presamples()*50,0.5);
+    result.setPrecise(result.presamples()*25,1.0);
   }
   return result;
 }
