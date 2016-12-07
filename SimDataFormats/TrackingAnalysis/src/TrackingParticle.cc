@@ -10,6 +10,8 @@ const unsigned int TrackingParticle::longLivedTag = 65536;
 TrackingParticle::TrackingParticle()
 {
 	// No operation
+    g4Tracks_begin_ = g4Tracks_.begin();
+    g4Tracks_end_ = g4Tracks_.end();
 }
 
 TrackingParticle::TrackingParticle( const SimTrack& simtrk, const TrackingVertexRef& parentVertex )
@@ -30,6 +32,10 @@ void TrackingParticle::addGenParticle( const reco::GenParticleRef& ref )
 void TrackingParticle::addG4Track( const SimTrack& t )
 {
 	g4Tracks_.push_back( t );
+    // update cached iterators
+    g4Tracks_begin_ = g4Tracks_.begin();
+    g4Tracks_end_ = g4Tracks_.end();
+
 }
 
 TrackingParticle::genp_iterator TrackingParticle::genParticle_begin() const
@@ -40,16 +46,6 @@ TrackingParticle::genp_iterator TrackingParticle::genParticle_begin() const
 TrackingParticle::genp_iterator TrackingParticle::genParticle_end() const
 {
 	return genParticles_.end();
-}
-
-TrackingParticle::g4t_iterator TrackingParticle::g4Track_begin() const
-{
-	return g4Tracks_.begin();
-}
-
-TrackingParticle::g4t_iterator TrackingParticle::g4Track_end() const
-{
-	return g4Tracks_.end();
 }
 
 void TrackingParticle::setParentVertex( const TrackingVertexRef& ref )

@@ -77,8 +77,8 @@ public:
     /// iterators
     genp_iterator genParticle_begin() const;
     genp_iterator genParticle_end() const;
-    g4t_iterator g4Track_begin() const;
-    g4t_iterator g4Track_end() const;
+    const g4t_iterator& g4Track_begin() const { return g4Tracks_begin_; }
+    const g4t_iterator& g4Track_end() const { return g4Tracks_end_; }
     void setParentVertex(const TrackingVertexRef& ref);
     void addDecayVertex(const TrackingVertexRef& ref);
     void clearParentVertex();
@@ -260,6 +260,9 @@ private:
     /// references to G4 and reco::GenParticle tracks
     std::vector<SimTrack> g4Tracks_;
     reco::GenParticleRefVector genParticles_;
+
+    // cached iterators
+    g4t_iterator g4Tracks_begin_, g4Tracks_end_;
 
     // Source and decay vertices
     TrackingVertexRef parentVertex_;

@@ -1176,8 +1176,8 @@ int MuonAssociatorByHitsHelper::getShared(MapOfMatchedIds & matchedIds, Tracking
     
   int nshared = 0;
   TrackingParticle::g4t_iterator simtrack;
-  TrackingParticle::g4t_iterator tbegin = trpart->g4Track_begin();
-  TrackingParticle::g4t_iterator tend = trpart->g4Track_end();
+  const TrackingParticle::g4t_iterator& tbegin = trpart->g4Track_begin();
+  const TrackingParticle::g4t_iterator& tend = trpart->g4Track_end();
 
   // map is indexed over the rechits of the reco::Track (no double-countings allowed)
   for (MapOfMatchedIds::const_iterator iRecH=matchedIds.begin(); iRecH!=matchedIds.end(); ++iRecH) {
