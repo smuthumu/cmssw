@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+using namespace std;
+
 void makeHisto(TTree* Events, string drawname, string hname, string cutname, string xname, string yname, string pre, bool h2){
 	string oname = pre+"_"+hname;
 	TCanvas* can = new TCanvas(oname.c_str(),oname.c_str());
@@ -35,15 +37,16 @@ void makeHisto(TTree* Events, string drawname, string hname, string cutname, str
 	can->Print((oname+".png").c_str(),"png");
 }
 
-void makeM2Plots(string fname, string pre){
+void makeM2Plots(string fname, string pre, string tag="HLT"){
 	TFile *file = TFile::Open(fname.c_str());
 	TTree* Events = (TTree*)file->Get("Events");
 	
-	Events->SetAlias("subdet","HBHERecHitsSorted_hbhereco__HLT.obj.obj.id().subdet()");
-	Events->SetAlias("M2","HBHERecHitsSorted_hbhereco__HLT.obj.obj.energy()");
-	Events->SetAlias("M0","HBHERecHitsSorted_hbhereco__HLT.obj.obj.eraw()");
-	Events->SetAlias("chi2","HBHERecHitsSorted_hbhereco__HLT.obj.obj.chi2()");
-	Events->SetAlias("time","HBHERecHitsSorted_hbhereco__HLT.obj.obj.time()");
+	string fulltag = "HBHERecHitsSorted_hbhereco__"+tag+".obj.obj";
+	Events->SetAlias("subdet",(fulltag+".id().subdet()").c_str());
+	Events->SetAlias("M2",(fulltag+".energy()").c_str());
+	Events->SetAlias("M0",(fulltag+".eraw()").c_str());
+	Events->SetAlias("chi2",(fulltag+".chi2()").c_str());
+	Events->SetAlias("time",(fulltag+".time()").c_str());
 	gStyle->SetPalette(57);
 	
 	makeHisto(Events,"M2:M0>>hM2M0(100,0,500,100,0,500)","hM2M0","subdet==2&&M2>0","M0 energy [GeV]","M2 energy [GeV]",pre,true);
