@@ -14,9 +14,10 @@ workflows = Matrix()
 #just define all of them
 
 #2017 WFs to run in IB (TenMuE_0_200, TTbar, ZEE, MinBias, TTbar PU, ZEE PU, TTbar design)
-#same for 2018
+#same for 2018 and 2017Plan1
 numWFIB = [10021.0,10024.0,10025.0,10026.0,10023.0,10224.0,10225.0,10424.0,
-           10821.0,10824.0,10825.0,10826.0,10823.0,11024.0,11025.0,11224.0]
+           10821.0,10824.0,10825.0,10826.0,10823.0,11024.0,11025.0,11224.0,
+           11621.0,11624.0,11625.0,11626.0,11623.0,11824.0,11825.0,12024.0]
 for i,key in enumerate(upgradeKeys[2017]):
     numWF=numWFAll[2017][i]
     for frag in upgradeFragments:

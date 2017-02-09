@@ -13,6 +13,10 @@ upgradeKeys[2017] = [
 #    '2018PU',
     '2018Design',
 #    '2018DesignPU',
+    '2017Plan1',
+#    '2017Plan1PU',
+    '2017Plan1Design',
+#    '2017Plan1DesignPU',
 ]
 
 upgradeKeys[2023] = [
@@ -42,7 +46,7 @@ numWFStart={
 numWFSkip=200
 # first two sets are the former D3 WF (now removed as redundant)
 # temporary measure to keep other WF numbers the same
-numWFConflict = [[11000,11200],[11400,11600],[20800,21200],[22400,22800],[25000,26000],[50000,51000]]
+numWFConflict = [[11000,11200],[11400,11600],[11800,12000],[12200,12400],[20800,21200],[22400,22800],[25000,26000],[50000,51000]]
 numWFAll={
     2017: [numWFStart[2017]],
     2023: [numWFStart[2023]]
@@ -117,6 +121,24 @@ upgradeProperties[2017] = {
         'BeamSpot': 'GaussSigmaZ4cm',
         'ScenToRun' : ['GenSimFull','DigiFull','RecoFull','HARVESTFull'],
     },
+    '2017Plan1' : {
+        'Geom' : 'Extended2017Plan1',
+        'GT' : 'auto:phase1_2017_realistic',
+        'HLTmenu': '@relval2016',
+        'Era' : 'Run2_2017_Plan1',
+        'Custom' : 'SLHCUpgradeSimulations/Configuration/HCalCustoms.customise_Hcal2017Plan1',
+        'ScenToRun' : ['GenSimFull','DigiFull','RecoFull','ALCAFull','HARVESTFull'],
+    },
+    '2017Plan1Design' : {
+        'Geom' : 'Extended2017Plan1',
+        'GT' : 'auto:phase1_2017_design',
+        'HLTmenu': '@relval2016',
+        'Era' : 'Run2_2017_Plan1',
+        'Custom' : 'SLHCUpgradeSimulations/Configuration/HCalCustoms.customise_Hcal2017Plan1',
+        'BeamSpot': 'GaussSigmaZ4cm',
+        'ScenToRun' : ['GenSimFull','DigiFull','RecoFull','HARVESTFull'],
+    },
+
 }
 
 upgradeProperties[2017]['2017PU'] = deepcopy(upgradeProperties[2017]['2017'])
