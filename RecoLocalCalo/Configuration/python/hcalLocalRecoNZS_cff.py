@@ -1,7 +1,17 @@
 import FWCore.ParameterSet.Config as cms
 
-import RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_hbhe_cfi
-hbherecoMB = RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_hbhe_cfi.hbheprereco.clone()
+def hbheNZS(module):
+    return module.clone(
+        dropZSmarkedPassed = cms.bool(False),
+        recoParamsFromDB = cms.bool(False),
+        algorithm = dict(
+            useM2 = cms.bool(False),
+            useM3 = cms.bool(False)
+        ),
+    )
+
+import RecoLocalCalo.Configuration.hcalLocalReco_cff
+hbherecoMB = hbheNZS(RecoLocalCalo.Configuration.hcalLocalReco_cff.hbheprereco)
 
 import RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_hf_cfi
 hfrecoMB = RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_hf_cfi.hfreco.clone()
@@ -9,25 +19,15 @@ hfrecoMB = RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_hf_cfi.hfreco.
 import RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_ho_cfi
 horecoMB = RecoLocalCalo.HcalRecProducers.HcalSimpleReconstructor_ho_cfi.horeco.clone()
 
-
 # switch off "Hcal ZS in reco":
-hbherecoMB.dropZSmarkedPassed = cms.bool(False)
 hfrecoMB.dropZSmarkedPassed = cms.bool(False)
 horecoMB.dropZSmarkedPassed = cms.bool(False)
 
 hcalLocalRecoSequenceNZS = cms.Sequence(hbherecoMB*hfrecoMB*horecoMB) 
 
+_phase1_hbherecoMB = hbheNZS(RecoLocalCalo.Configuration.hcalLocalReco_cff._phase1_hbheprereco)
 import RecoLocalCalo.HcalRecProducers.hfprereco_cfi
 import RecoLocalCalo.HcalRecProducers.HFPhase1Reconstructor_cfi
-import RecoLocalCalo.HcalRecProducers.HBHEPhase1Reconstructor_cfi
-_phase1_hbherecoMB = RecoLocalCalo.HcalRecProducers.HBHEPhase1Reconstructor_cfi.hbheprereco.clone(
-    dropZSmarkedPassed = cms.bool(False),
-    recoParamsFromDB = cms.bool(False),
-    algorithm = dict(
-        useM2 = cms.bool(False),
-        useM3 = cms.bool(False)
-    ),
-)
 hfprerecoMB = RecoLocalCalo.HcalRecProducers.hfprereco_cfi.hfprereco.clone(
     dropZSmarkedPassed = cms.bool(False)
 )
