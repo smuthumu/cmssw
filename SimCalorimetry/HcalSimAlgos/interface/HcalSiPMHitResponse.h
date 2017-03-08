@@ -38,7 +38,7 @@ public:
 
   virtual void add(const PCaloHit& hit, CLHEP::HepRandomEngine*) override;
 
-  virtual void add(const CaloSamples& signal);
+  virtual void add(const CaloSamples& signal, CLHEP::HepRandomEngine*) override;
 
   virtual void addPEnoise(CLHEP::HepRandomEngine* engine);
 

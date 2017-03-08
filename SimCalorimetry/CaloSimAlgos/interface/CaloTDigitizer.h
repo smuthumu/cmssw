@@ -95,12 +95,12 @@ public:
   /// Collects the digis
 
   void run(DigiCollection & output, CLHEP::HepRandomEngine* engine) {
-    theHitResponse->finalizeHits(engine);
-    //std::cout << " In CaloTDigitizer, after finalize hits " << std::endl;
-
     assert(theDetIds->size() != 0);
 
     if(theNoiseSignalGenerator != 0) addNoiseSignals(engine);
+
+    theHitResponse->finalizeHits(engine);
+    //std::cout << " In CaloTDigitizer, after finalize hits " << std::endl;
 
     theElectronicsSim->newEvent(engine);
 
@@ -146,7 +146,7 @@ public:
     for(std::vector<CaloSamples>::const_iterator signalItr = noiseSignals.begin(),
         signalEnd = noiseSignals.end(); signalItr != signalEnd; ++signalItr)
     {
-      theHitResponse->add(*signalItr);
+      theHitResponse->add(*signalItr,engine);
     }
   }
 

@@ -13,6 +13,7 @@
 #include "CalibCalorimetry/HcalAlgos/interface/HcalPulseShapes.h"
 
 #include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Random/RandFlat.h"
 
 #include <math.h>
 #include <list>
@@ -51,17 +52,31 @@ void HcalSiPMHitResponse::finalizeHits(CLHEP::HepRandomEngine* engine) {
 
     LogDebug("HcalSiPMHitResponse") << HcalDetId(signal.id()) << ' ' << signal;
 
-    if (keep) add(signal);
+    if (keep) CaloHitResponse::add(signal);
   }
 }
 
-void HcalSiPMHitResponse::add(const CaloSamples& signal) {
+//used for premixing - converts coarse-binned CaloSamples into fine-binned photon history
+void HcalSiPMHitResponse::add(const CaloSamples& signal, CLHEP::HepRandomEngine* engine) {
+  //loop over calosamples bins, generate random time for each pe (w/in BUNCHSPACE), insert in precisionTimedPhotons
   DetId id(signal.id());
-  CaloSamples * oldSignal = findSignal(id);
-  if (oldSignal == 0) {
-    theAnalogSignalMap[id] = signal;
-  } else {
-    (*oldSignal) += signal;
+  const HcalSimParameters& pars = dynamic_cast<const HcalSimParameters&>(theParameterMap->simParameters(id));
+  if (precisionTimedPhotons.find(id)==precisionTimedPhotons.end()) {
+    precisionTimedPhotons.insert(
+      std::pair<DetId, photonTimeHist >(id, photonTimeHist(nbins * pars.readoutFrameSize(), 0)
+      )
+    );
+  }
+  int bunch_counter = 0;
+  for(int i = 0; i < signal.size(); ++i){
+    unsigned int photons(signal[i] + 0.5);
+    for(unsigned pe = 0; pe < photons; ++pe){
+      double t_pe = CLHEP::RandFlat::shoot(engine,bunch_counter,bunch_counter+BUNCHSPACE);
+      int t_bin = int(t_pe*invdt + 0.5);
+      if((t_bin >= 0) && (static_cast<unsigned int>(t_bin) < precisionTimedPhotons[id].size()))
+        precisionTimedPhotons[id][t_bin] += 1;
+    }
+    bunch_counter += BUNCHSPACE;
   }
 }
 
@@ -203,6 +218,14 @@ CaloSamples HcalSiPMHitResponse::makeSiPMSignal(DetId const& id,
     preciseBin = tbin;
     sampleBin = preciseBin/nbins;
     if (pe > 0) {
+      //skip saturation/recovery and pulse smearing for premix stage 1
+      if(PreMixDigis){
+        signal[sampleBin] += pe;
+        signal.preciseAtMod(preciseBin) += pe;
+        elapsedTime += dt;
+        continue;
+      }
+
       hitPixels = theSiPM.hitCells(engine, pe, 0., elapsedTime);
       sumHits += hitPixels;
       LogDebug("HcalSiPMHitResponse") << " elapsedTime: " << elapsedTime
