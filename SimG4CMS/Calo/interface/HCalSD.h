@@ -87,9 +87,9 @@ private:
   HFShowerParam *               showerParam;
   HFShowerPMT *                 showerPMT;
   HFShowerFibreBundle *         showerBundle;
-  HBHEDarkening *               m_HBDarkening;
-  HBHEDarkening *               m_HEDarkening;
-  HFDarkening *                 m_HFDarkening;
+  std::unique_ptr<HBHEDarkening> m_HBDarkening;
+  std::unique_ptr<HBHEDarkening> m_HEDarkening;
+  std::unique_ptr<HFDarkening>   m_HFDarkening;
   bool                          useBirk, useLayerWt, useFibreBundle, usePMTHit;
   bool                          testNumber, neutralDensity;
   double                        birk1, birk2, birk3, betaThr;
