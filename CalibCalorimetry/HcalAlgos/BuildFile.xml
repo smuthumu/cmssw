@@ -8,6 +8,7 @@
 <use   name="CondFormats/HcalObjects"/>
 <use   name="DataFormats/HcalDigi"/>
 <use   name="CalibFormats/HcalObjects"/>
+<use   name="Geometry/CaloTopology"/>
 <export>
   <lib   name="1"/>
 </export>

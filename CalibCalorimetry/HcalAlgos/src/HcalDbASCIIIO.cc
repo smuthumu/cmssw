@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdio>
 #include <sstream>
+#include <memory>
 
 #include "DataFormats/HcalDetId/interface/HcalGenericDetId.h"
 #include "DataFormats/HcalDetId/interface/HcalElectronicsId.h"
@@ -161,8 +162,8 @@ bool from_string(T& t, const std::string& s, std::ios_base& (*f)(std::ios_base&)
 }
 
 template <class T,class S> 
-bool getHcalObject (std::istream& fInput, T* fObject, S* fCondObject) {
-  if (!fObject) return false; //fObject = new T;
+auto getHcalObject (std::istream& fInput, const HcalTopology* topo=nullptr){
+  auto fObject = topo ? std::make_unique<T>(topo) : std::make_unique<T>();
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
@@ -174,18 +175,12 @@ bool getHcalObject (std::istream& fInput, T* fObject, S* fCondObject) {
     }
     DetId id = HcalDbASCIIIO::getId (items);
     
-//    if (fObject->exists(id) )
-//      edm::LogWarning("Redefining Channel") << "line: " << buffer << "\n attempts to redefine data. Ignored" << std::endl;
-//    else
-//      {
-	fCondObject = new S(id, atof (items [4].c_str()), atof (items [5].c_str()), 
+	auto fCondObject = std::make_unique<S>(id, atof (items [4].c_str()), atof (items [5].c_str()), 
 			   atof (items [6].c_str()), atof (items [7].c_str()));
 	fObject->addValues(*fCondObject);
-	delete fCondObject;
-	//      }
   }
 
-  return true;
+  return fObject;
 }
 
 template <class T>
@@ -210,8 +205,8 @@ bool dumpHcalObject (std::ostream& fOutput, const T& fObject) {
 }
 
 template <class T,class S> 
-bool getHcalSingleFloatObject (std::istream& fInput, T* fObject, S* fCondObject) {
-  if (!fObject) return false; //fObject = new T;
+auto getHcalSingleFloatObject (std::istream& fInput, const HcalTopology* topo=nullptr) {
+  auto fObject = topo ? std::make_unique<T>(topo) : std::make_unique<T>();
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
@@ -223,16 +218,10 @@ bool getHcalSingleFloatObject (std::istream& fInput, T* fObject, S* fCondObject)
     }
     DetId id = HcalDbASCIIIO::getId (items);
     
-//    if (fObject->exists(id) )
-//      edm::LogWarning("Redefining Channel") << "line: " << buffer << "\n attempts to redefine data. Ignored" << std::endl;
-//    else
-//      {
-	fCondObject = new S(id, atof (items [4].c_str()) );
+	auto fCondObject = std::make_unique<S>(id, atof (items [4].c_str()) );
 	fObject->addValues(*fCondObject);
-	delete fCondObject;
-	//      }
   }
-  return true;
+  return fObject;
 }
 
 template <class T>
@@ -255,8 +244,8 @@ bool dumpHcalSingleFloatObject (std::ostream& fOutput, const T& fObject) {
 }
 
 template <class T,class S> 
-bool getHcalSingleIntObject (std::istream& fInput, T* fObject, S* fCondObject) {
-  if (!fObject) return false; //fObject = new T;
+auto getHcalSingleIntObject (std::istream& fInput, const HcalTopology* topo=nullptr) {
+  auto fObject = topo ? std::make_unique<T>(topo) : std::make_unique<T>();
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
@@ -268,16 +257,10 @@ bool getHcalSingleIntObject (std::istream& fInput, T* fObject, S* fCondObject) {
     }
     DetId id = HcalDbASCIIIO::getId (items);
     
-//    if (fObject->exists(id) )
-//      edm::LogWarning("Redefining Channel") << "line: " << buffer << "\n attempts to redefine data. Ignored" << std::endl;
-//    else
-//      {
-	fCondObject = new S(id, atoi (items [4].c_str()) );
+	auto fCondObject = std::make_unique<S>(id, atoi (items [4].c_str()) );
 	fObject->addValues(*fCondObject);
-	delete fCondObject;
-	//      }
   }
-  return true;
+  return fObject;
 }
 
 template <class T>
@@ -300,15 +283,15 @@ bool dumpHcalSingleIntObject (std::ostream& fOutput, const T& fObject) {
 }
 
 template <class T,class S>
-bool getHcalMatrixObject (std::istream& fInput, T* fObject, S* fCondObject) {
-  if (!fObject) return false; //fObject = new T;
+auto getHcalMatrixObject (std::istream& fInput, const HcalTopology* topo=nullptr) {
+  auto fObject = topo ? std::make_unique<T>(topo) : std::make_unique<T>();  
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
     std::vector <std::string> items = splitString (std::string (buffer));
     if (items.size()==0) continue; // blank line
     DetId firstid = HcalDbASCIIIO::getId (items);
-    fCondObject = new S(firstid.rawId());
+    auto fCondObject = std::make_unique<S>(firstid.rawId());
     for(int j = 0; j != 10; j++) fCondObject->setValue(atoi(items[4].c_str()), 0, j, atof(items[j+5].c_str()));
     for(int i = 1; i != 40; i++){
        fInput.getline(buffer, 1024);
@@ -318,9 +301,8 @@ bool getHcalMatrixObject (std::istream& fInput, T* fObject, S* fCondObject) {
        for(int j = 0; j != 10; j++) fCondObject->setValue(atoi(items[4].c_str()), i%10, j, atof(items[j+5].c_str()));
      }
      fObject->addValues(*fCondObject);
-     delete fCondObject;
   }
-  return true;
+  return fObject;
 }
 
 template <class T>
@@ -356,39 +338,40 @@ bool dumpHcalMatrixObject (std::ostream& fOutput, const T& fObject) {
 
 // ------------------------------ end templates ------------------------------
 
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalGains* fObject) {return getHcalObject (fInput, fObject, new HcalGain);}
+template<> auto HcalDbASCIIIO::getObject<HcalGains>(std::istream& fInput, const HcalTopology* topo) {return getHcalObject<HcalGains,HcalGain>(fInput,topo);}
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalGains& fObject) {return dumpHcalObject (fOutput, fObject);}
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalGainWidths* fObject) {return getHcalObject (fInput, fObject, new HcalGainWidth);}
+
+template<> auto HcalDbASCIIIO::getObject<HcalGainWidths>(std::istream& fInput, const HcalTopology* topo) {return getHcalObject<HcalGainWidths,HcalGainWidth>(fInput,topo);}
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalGainWidths& fObject) {return dumpHcalObject (fOutput, fObject);}
 
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalRespCorrs* fObject) {return getHcalSingleFloatObject (fInput, fObject, new HcalRespCorr); }
+template<> auto HcalDbASCIIIO::getObject<HcalRespCorrs>(std::istream& fInput, const HcalTopology* topo) {return getHcalSingleFloatObject<HcalRespCorrs,HcalRespCorr>(fInput, topo); }
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalRespCorrs& fObject) {return dumpHcalSingleFloatObject (fOutput, fObject); }
 
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalLUTCorrs* fObject) {return getHcalSingleFloatObject (fInput, fObject, new HcalLUTCorr); }
+template<> auto HcalDbASCIIIO::getObject<HcalLUTCorrs>(std::istream& fInput, const HcalTopology* topo) {return getHcalSingleFloatObject<HcalLUTCorrs,HcalLUTCorr>(fInput, topo); }
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalLUTCorrs& fObject) {return dumpHcalSingleFloatObject (fOutput, fObject); }
 
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalPFCorrs* fObject) {return getHcalSingleFloatObject (fInput, fObject, new HcalPFCorr); }
+template<> auto HcalDbASCIIIO::getObject<HcalPFCorrs>(std::istream& fInput, const HcalTopology* topo) {return getHcalSingleFloatObject<HcalPFCorrs,HcalPFCorr>(fInput, topo); }
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalPFCorrs& fObject) {return dumpHcalSingleFloatObject (fOutput, fObject); }
 
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalTimeCorrs* fObject) {return getHcalSingleFloatObject (fInput, fObject, new HcalTimeCorr); }
+template<> auto HcalDbASCIIIO::getObject<HcalTimeCorrs>(std::istream& fInput, const HcalTopology* topo) {return getHcalSingleFloatObject<HcalTimeCorrs,HcalTimeCorr>(fInput, topo); }
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalTimeCorrs& fObject) {return dumpHcalSingleFloatObject (fOutput, fObject); }
 
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalZSThresholds* fObject) {return getHcalSingleIntObject (fInput, fObject, new HcalZSThreshold); }
+template<> auto HcalDbASCIIIO::getObject<HcalZSThresholds>(std::istream& fInput, const HcalTopology* topo) {return getHcalSingleIntObject<HcalZSThresholds,HcalZSThreshold>(fInput, topo); }
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalZSThresholds& fObject) {return dumpHcalSingleIntObject (fOutput, fObject); }
 
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalZDCLowGainFractions* fObject) {return getHcalSingleFloatObject (fInput, fObject, new HcalZDCLowGainFraction); }
+template<> auto HcalDbASCIIIO::getObject<HcalZDCLowGainFractions>(std::istream& fInput, const HcalTopology* topo) {return getHcalSingleFloatObject<HcalZDCLowGainFractions,HcalZDCLowGainFraction>(fInput, topo); }
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalZDCLowGainFractions& fObject) {return dumpHcalSingleFloatObject (fOutput, fObject); }
 
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalValidationCorrs* fObject) {return getHcalSingleFloatObject (fInput, fObject, new HcalValidationCorr); }
+template<> auto HcalDbASCIIIO::getObject<HcalValidationCorrs>(std::istream& fInput, const HcalTopology* topo) {return getHcalSingleFloatObject<HcalValidationCorrs,HcalValidationCorr>(fInput, topo); }
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalValidationCorrs& fObject) {return dumpHcalSingleFloatObject (fOutput, fObject); }
 
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalQIETypes* fObject) {return getHcalSingleIntObject (fInput, fObject, new HcalQIEType); }
+template<> auto HcalDbASCIIIO::getObject<HcalQIETypes>(std::istream& fInput, const HcalTopology* topo) {return getHcalSingleIntObject<HcalQIETypes,HcalQIEType>(fInput, topo); }
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalQIETypes& fObject) {return dumpHcalSingleIntObject (fOutput, fObject); }
 
 // ------------------------------ start specific implementations ------------------------------
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalRecoParams* fObject)
+template<> auto HcalDbASCIIIO::getObject<HcalRecoParams>(std::istream& fInput, const HcalTopology* topo)
 {
-  if (!fObject) return false; // fObject = new HcalRecoParams();  This was always useless...
+  auto fObject = std::make_unique<HcalRecoParams>(topo);
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
@@ -454,16 +437,10 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalRecoParams* fObject)
        }
     } // packing sheme 1.    
    
-    // HcalRecoParam* fCondObject = new HcalRecoParam(id, atoi (items [4].c_str()), atoi (items [5].c_str()) );
-
-    // std::cout<<"  buffer "<<buffer<<std::endl;
-    // std::cout<<"  param1, param2 "<<param1<<"  "<<param2<<std::endl;
-
-    HcalRecoParam* fCondObject = new HcalRecoParam(id, param1, param2 );
+    auto fCondObject = std::make_unique<HcalRecoParam>(id, param1, param2 );
     fObject->addValues(*fCondObject);
-    delete fCondObject;
   }
-  return true;
+  return fObject;
 }
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalRecoParams& fObject)
 {
@@ -581,9 +558,9 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalRecoParams& fOb
   return true;
 }
 
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalLongRecoParams* fObject)
+template<> auto HcalDbASCIIIO::getObject<HcalLongRecoParams>(std::istream& fInput, const HcalTopology* topo)
 {
-  if (!fObject) return false; // fObject = new HcalLongRecoParams();
+  auto fObject = std::make_unique<HcalLongRecoParams>(topo);
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
@@ -603,59 +580,11 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalLongRecoParams* fObject
     std::vector<unsigned int> mySignalTS = splitStringToIntByComma(items[4]);
     std::vector<unsigned int> myNoiseTS = splitStringToIntByComma(items[5]);
 
-    HcalLongRecoParam* fCondObject = new HcalLongRecoParam(id, mySignalTS, myNoiseTS );
+    auto fCondObject = std::make_unique<HcalLongRecoParam>(id, mySignalTS, myNoiseTS );
     fObject->addValues(*fCondObject);
-    delete fCondObject;
   }
-  return true;
+  return fObject;
 }
-
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalTimingParams* fObject)
-{
-  if (!fObject) return false; // fObject = new HcalTimingParams();
-  char buffer [1024];
-  while (fInput.getline(buffer, 1024)) {
-    if (buffer [0] == '#') continue; //ignore comment
-    std::vector <std::string> items = splitString (std::string (buffer));
-    if (items.size()==0) continue; // blank line
-    if (items.size () < 7) {
-      edm::LogWarning("Format Error") << "Bad line: " << buffer << "\n line must contain 7 items: eta, phi, depth, subdet, nhit, phase, rms,detid" << std::endl;
-      continue;
-    }
-    //std::cout<<"items[3] "<<items [3]<<std::endl;
-    //std::cout<<"items[0] "<<items [0]<<std::endl;
-    //std::cout<<"items[1] "<<items [1]<<std::endl;
-    //std::cout<<"items[2] "<<items [2]<<std::endl;
-
-    //std::cout<<"items[4] "<<items [4]<<std::endl;
-    //std::cout<<"items[5] "<<items [5]<<std::endl;
-    //std::cout<<"items[6] "<<items [6]<<std::endl;
-    DetId id = HcalDbASCIIIO::getId (items);
-    //std::cout<<"calculated id "<<id.rawId()<<std::endl;
-    HcalTimingParam* fCondObject = new HcalTimingParam(id, atoi (items [4].c_str()), atof (items [5].c_str()), atof (items [6].c_str()));
-    fObject->addValues(*fCondObject);
-    delete fCondObject;
-  }
-  return true;
-}
-bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalTimingParams& fObject)
-{
-  char buffer [1024];
-  sprintf (buffer, "# %15s %15s %15s %15s %15s %15s %15s %15s\n", "eta", "phi", "dep", "det", "nhit", "mean","rms" ,"DetId");
-  fOutput << buffer;
-  std::vector<DetId> channels = fObject.getAllChannels ();
-  std::sort (channels.begin(), channels.end(), DetIdLess ());
-  for (std::vector<DetId>::iterator channel = channels.begin ();
-       channel !=  channels.end ();
-       ++channel) {
-    HcalDbASCIIIO::dumpId (fOutput, *channel);
-    sprintf (buffer, " %15d %8.5f %8.5f %16X\n",
-	     fObject.getValues (*channel)->nhits(), fObject.getValues (*channel)->phase(),fObject.getValues(*channel)->rms(),channel->rawId ());
-    fOutput << buffer;
-  }
-  return true;
-}
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalLongRecoParams& fObject)
 {
   char buffer [1024];
@@ -695,9 +624,46 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalLongRecoParams&
   return true;
 }
 
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalMCParams* fObject)
+template<> auto HcalDbASCIIIO::getObject<HcalTimingParams>(std::istream& fInput, const HcalTopology* topo)
 {
-  if (!fObject) return false; // fObject = new HcalMCParams();
+  auto fObject = std::make_unique<HcalTimingParams>(topo);
+  char buffer [1024];
+  while (fInput.getline(buffer, 1024)) {
+    if (buffer [0] == '#') continue; //ignore comment
+    std::vector <std::string> items = splitString (std::string (buffer));
+    if (items.size()==0) continue; // blank line
+    if (items.size () < 7) {
+      edm::LogWarning("Format Error") << "Bad line: " << buffer << "\n line must contain 7 items: eta, phi, depth, subdet, nhit, phase, rms,detid" << std::endl;
+      continue;
+    }
+
+    DetId id = HcalDbASCIIIO::getId (items);
+    auto fCondObject = std::make_unique<HcalTimingParam>(id, atoi (items [4].c_str()), atof (items [5].c_str()), atof (items [6].c_str()));
+    fObject->addValues(*fCondObject);
+  }
+  return fObject;
+}
+bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalTimingParams& fObject)
+{
+  char buffer [1024];
+  sprintf (buffer, "# %15s %15s %15s %15s %15s %15s %15s %15s\n", "eta", "phi", "dep", "det", "nhit", "mean","rms" ,"DetId");
+  fOutput << buffer;
+  std::vector<DetId> channels = fObject.getAllChannels ();
+  std::sort (channels.begin(), channels.end(), DetIdLess ());
+  for (std::vector<DetId>::iterator channel = channels.begin ();
+       channel !=  channels.end ();
+       ++channel) {
+    HcalDbASCIIIO::dumpId (fOutput, *channel);
+    sprintf (buffer, " %15d %8.5f %8.5f %16X\n",
+	     fObject.getValues (*channel)->nhits(), fObject.getValues (*channel)->phase(),fObject.getValues(*channel)->rms(),channel->rawId ());
+    fOutput << buffer;
+  }
+  return true;
+}
+
+template<> auto HcalDbASCIIIO::getObject<HcalMCParams>(std::istream& fInput, const HcalTopology* topo)
+{
+  auto fObject = std::make_unique<HcalMCParams>(topo);
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
@@ -743,18 +709,14 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalMCParams* fObject)
        }
     }
 
-    HcalMCParam* fCondObject = new HcalMCParam(id, param1 );
+    auto fCondObject = std::make_unique<HcalMCParam>(id, param1 );
     fObject->addValues(*fCondObject);
-    delete fCondObject;
   }
-  return true;
+  return fObject;
 }
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalMCParams& fObject)
 {
   char buffer [1024];
-  // sprintf (buffer, "# %15s %15s %15s %15s %14s %10s\n", "eta", "phi", "dep", "det", "signalShape", "DetId");
-  // fOutput << buffer;
   std::vector<DetId> channels = fObject.getAllChannels ();
   std::sort (channels.begin(), channels.end(), DetIdLess ());
   int  myCounter=0;
@@ -811,9 +773,9 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalMCParams& fObje
   return true;
 }
 
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalPedestals* fObject) {
+template<> auto HcalDbASCIIIO::getObject<HcalPedestals>(std::istream& fInput, const HcalTopology* topo) {
+  auto fObject = std::make_unique<HcalPedestals>(topo);
   char buffer [1024];
-
   while (fInput.getline(buffer, 1024)) {
     std::vector <std::string> items = splitString (std::string (buffer));
     if (items.size()==0) continue; // blank line
@@ -832,7 +794,7 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalPedestals* fObject) {
       else
 	{
 	  edm::LogWarning("Pedestal Unit Missing") << "The unit for the pedestals is missing in the txt file." << std::endl;
-	  return false;
+	  return std::unique_ptr<HcalPedestals>(nullptr);
 	}
     }
   }
@@ -848,35 +810,25 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalPedestals* fObject) {
     }
     DetId id = getId (items);
     
-//    if (fObject->exists(id) )
-//      edm::LogWarning("Redefining Channel") << "line: " << buffer << "\n attempts to redefine data. Ignored" << std::endl;
-//    else
-//      {
-
     if (items.size() < 12) // old format without widths
       {
-	HcalPedestal* fCondObject = new HcalPedestal(id, atof (items [4].c_str()), atof (items [5].c_str()), 
+        auto fCondObject = std::make_unique<HcalPedestal>(id, atof (items [4].c_str()), atof (items [5].c_str()), 
 						     atof (items [6].c_str()), atof (items [7].c_str()), 
 						     0., 0., 0., 0. );
-	fObject->addValues(*fCondObject);
-	delete fCondObject;
+        fObject->addValues(*fCondObject);
       }
     else // new format with widths
       {
-	HcalPedestal* fCondObject = new HcalPedestal(id, atof (items [4].c_str()), atof (items [5].c_str()), 
+        auto fCondObject = std::make_unique<HcalPedestal>(id, atof (items [4].c_str()), atof (items [5].c_str()), 
 						     atof (items [6].c_str()), atof (items [7].c_str()), 
 						     atof (items [8].c_str()), atof (items [9].c_str()),
 						     atof (items [10].c_str()), atof (items [11].c_str()) );
-	fObject->addValues(*fCondObject);
-	delete fCondObject;
+        fObject->addValues(*fCondObject);
       }
 
-	//      }
   }
-  return true;
+  return fObject;
 }
-
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalPedestals& fObject) {
   char buffer [1024];
   if (fObject.isADC() ) sprintf (buffer, "#U ADC  << this is the unit \n");
@@ -902,11 +854,9 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalPedestals& fObj
   return true;
 }
 
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalChannelQuality* fObject) 
+template<> auto HcalDbASCIIIO::getObject<HcalChannelQuality>(std::istream& fInput, const HcalTopology* topo) 
 {
-  if (!fObject) return false; //fObject = new HcalChannelQuality;
+  auto fObject = std::make_unique<HcalChannelQuality>(topo);
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
@@ -918,10 +868,6 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalChannelQuality* fObject
     }
     DetId id = getId (items);
     
-//    if (fObject->exists(id) )
-//      edm::LogWarning("Redefining Channel") << "line: " << buffer << "\n attempts to redefine data. Ignored" << std::endl;
-//    else
-//      {
     uint32_t mystatus;
     if (items[4] == "(hex)")
       sscanf(items[5].c_str(),"%X", &mystatus);
@@ -933,15 +879,11 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalChannelQuality* fObject
 	continue;
       }
 
-    HcalChannelStatus* fCondObject = new HcalChannelStatus(id, mystatus); //atoi (items [4].c_str()) );
+    auto fCondObject = std::make_unique<HcalChannelStatus>(id, mystatus); //atoi (items [4].c_str()) );
     fObject->addValues(*fCondObject);
-    delete fCondObject;
-	//      }
   }
-  return true;
+  return fObject;
 }
-
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalChannelQuality& fObject) {
   char buffer [1024];
   sprintf (buffer, "# %15s %15s %15s %15s %15s %10s\n", "eta", "phi", "dep", "det", "(base) value", "DetId");
@@ -960,12 +902,10 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalChannelQuality&
   return true;
 }
 
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalL1TriggerObjects* fObject)
+template<> auto HcalDbASCIIIO::getObject<HcalL1TriggerObjects>(std::istream& fInput, const HcalTopology* topo)
 {
+  auto fObject = std::make_unique<HcalL1TriggerObjects>(topo);
   char buffer [1024];
-
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') 
       {
@@ -991,14 +931,11 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalL1TriggerObjects* fObje
     }
     DetId id = getId (items);
     
-    HcalL1TriggerObject* fCondObject = new HcalL1TriggerObject(id, atof(items[4].c_str()), atof(items[5].c_str()), atoi(items[6].c_str()) );
-    
+    auto fCondObject = std::make_unique<HcalL1TriggerObject>(id, atof(items[4].c_str()), atof(items[5].c_str()), atoi(items[6].c_str()) );
     fObject->addValues(*fCondObject);
-    delete fCondObject;
   }
-  return true;
+  return fObject;
 }
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalL1TriggerObjects& fObject)
 {
   char buffer [1024];
@@ -1027,12 +964,10 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalL1TriggerObject
     }
   }
   return true;
-
 }
 
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalPedestalWidths* fObject) {
+template<> auto HcalDbASCIIIO::getObject<HcalPedestalWidths>(std::istream& fInput, const HcalTopology* topo) {
+  auto fObject = std::make_unique<HcalPedestalWidths>(topo);
   char buffer [1024];
   int linecounter = 0;
 
@@ -1055,7 +990,7 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalPedestalWidths* fObject
       else
 	{
 	  edm::LogWarning("Pedestal Width Unit Missing") << "The unit for the pedestal widths is missing in the txt file." << std::endl;
-	  return false;
+	  return std::unique_ptr<HcalPedestalWidths>(nullptr);
 	}
     }
   }
@@ -1072,11 +1007,6 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalPedestalWidths* fObject
       continue;
     }
     DetId id = getId (items);
-
-//    if (fObject->exists(id) )
-//      edm::LogWarning("Redefining Channel") << "line: " << buffer << "\n attempts to redefine data. Ignored" << std::endl;
-//    else
-//      {
 
     if (items.size() < 20) //old format
       {
@@ -1120,12 +1050,9 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalPedestalWidths* fObject
 	values.setSigma (3, 3, atof (items [19].c_str()) );
 	fObject->addValues(values);	
       }
-
-	//      }
   }
-  return true;
+  return fObject;
 }
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalPedestalWidths& fObject) {
   char buffer [1024];
   if (fObject.isADC() ) sprintf (buffer, "#U ADC  << this is the unit \n");
@@ -1156,9 +1083,8 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalPedestalWidths&
   return true;
 }
 
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalQIEData* fObject) {
+template<> auto HcalDbASCIIIO::getObject<HcalQIEData>(std::istream& fInput, const HcalTopology* topo) {
+  auto fObject = std::make_unique<HcalQIEData>(topo);
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
@@ -1173,12 +1099,6 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalQIEData* fObject) {
 	continue;
       }
       DetId id = getId (items);
-      fObject->sort ();
-      //      try {
-      //      fObject->getCoder (id);
-      //      edm::LogWarning("Redefining Channel") << "line: " << buffer << "\n attempts to redefine data. Ignored" << std::endl;
-	//      }
-//      catch (cms::Exception& e) {
 	HcalQIECoder coder (id.rawId ());
 	int index = 4;
 	for (unsigned capid = 0; capid < 4; capid++) {
@@ -1193,13 +1113,10 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalQIEData* fObject) {
 	}
 
 	fObject->addCoder (coder);
-//      }
     }
   }
-  fObject->sort ();
-  return true;
+  return fObject;
 }
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalQIEData& fObject) {
 
   char buffer [1024];
@@ -1234,8 +1151,8 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalQIEData& fObjec
   return true;
 }
 
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalCalibrationQIEData* fObject) {
+template<> auto HcalDbASCIIIO::getObject<HcalCalibrationQIEData>(std::istream& fInput, const HcalTopology* topo) {
+  auto fObject = std::make_unique<HcalCalibrationQIEData>(topo);
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
@@ -1245,12 +1162,6 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalCalibrationQIEData* fOb
       continue;
     }
     DetId id = getId (items);
-    fObject->sort ();
-    //    try {
-    //    fObject->getCoder (id);
-    //    edm::LogWarning("Redefining Channel") << "line: " << buffer << "\n attempts to redefine data. Ignored" << std::endl;
-      //    }
-//    catch (cms::Exception& e) {
       HcalCalibrationQIECoder coder (id.rawId ());
       int index = 4;
       float values [32];
@@ -1259,12 +1170,9 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalCalibrationQIEData* fOb
       }
       coder.setMinCharges (values);
       fObject->addCoder (coder);
-//    }
   }
-  fObject->sort ();
-  return true;
+  return fObject;
 }
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalCalibrationQIEData& fObject) {
   char buffer [1024];
   fOutput << "# QIE data in calibration mode" << std::endl;
@@ -1290,9 +1198,8 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalCalibrationQIED
   return true;
 }
 
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalElectronicsMap* fObject) {
+template<> auto HcalDbASCIIIO::getObject<HcalElectronicsMap>(std::istream& fInput, const HcalTopology* topo) {
+  auto fObject = std::make_unique<HcalElectronicsMap>();
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
@@ -1318,7 +1225,6 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalElectronicsMap* fObject
 	continue;
       }
     }
-    //    std::cout << "HcalElectronicsMap-> processing line: " << buffer << std::endl;
     int crate = atoi (items [1].c_str());
     int slot = atoi (items [2].c_str());
     int top = 1;
@@ -1369,14 +1275,12 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalElectronicsMap* fObject
     }
   }
   fObject->sort ();
-  return true;
+  return fObject;
 }
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalElectronicsMap& fObject) {
   std::vector<HcalElectronicsId> eids = fObject.allElectronicsId ();
   char buf [1024];
   // changes by Jared, 6.03.09/(included 25.03.09)
-  //  sprintf (buf, "#%10s %6s %6s %6s %6s %6s %6s %6s %15s %15s %15s %15s",
   sprintf (buf, "# %7s %3s %3s %3s %4s %7s %10s %14s %7s %5s %5s %6s",
 	   "i", "cr", "sl", "tb", "dcc", "spigot", "fiber/slb", "fibcha/slbcha", "subdet", "ieta", "iphi", "depth");
   fOutput << buf << std::endl;
@@ -1389,12 +1293,9 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalElectronicsMap&
 	HcalText2DetIdConverter converter (trigger);
         if( eid.isVMEid() ){
 	  // changes by Jared, 6.03.09/(included 25.03.09)
-	  //	sprintf (buf, " %10X %6d %6d %6c %6d %6d %6d %6d %15s %15s %15s %15s",
 	  sprintf (buf, " %7X %3d %3d %3c %4d %7d %10d %14d %7s %5s %5s %6s",
-		   //		 i,
 		   converter.getId().rawId(),
 		   // changes by Jared, 6.03.09/(included 25.03.09)
-		   //		 eid.readoutVMECrateId(), eid.htrSlot(), eid.htrTopBottom()>0?'t':'b', eid.dccid(), eid.spigot(), eid.fiberIndex(), eid.fiberChanId(),
 		   eid.readoutVMECrateId(), eid.htrSlot(), eid.htrTopBottom()>0?'t':'b', eid.dccid(), eid.spigot(), eid.slbSiteNumber(), eid.slbChannelIndex(),
 		   converter.getFlavor ().c_str (), converter.getField1 ().c_str (), converter.getField2 ().c_str (), converter.getField3 ().c_str ()
 	  	   );
@@ -1402,7 +1303,6 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalElectronicsMap&
         }else if( eid.isUTCAid() ){
            sprintf (buf, " %7X %3d %3d   u %4d %7d %10d %14d %7s %5s %5s %6s",
                     converter.getId().rawId(),
-//                    eid.crateId(), eid.slot(), 0, eid.spigot(), eid.fiberIndex(), eid.fiberChanId(), 
                     eid.crateId(), eid.slot(), 0, 0, eid.fiberIndex(), eid.fiberChanId(), 
                     converter.getFlavor ().c_str (), converter.getField1 ().c_str (), converter.getField2 ().c_str (), converter.getField3 ().c_str ()
                    );
@@ -1418,18 +1318,14 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalElectronicsMap&
 	HcalText2DetIdConverter converter (channel);
 	if (eid.isVMEid()) {
 	  // changes by Jared, 6.03.09/(included 25.03.09)
-	  //	sprintf (buf, " %10X %6d %6d %6c %6d %6d %6d %6d %15s %15s %15s %15s",
 	  sprintf (buf, " %7X %3d %3d %3c %4d %7d %10d %14d %7s %5s %5s %6s",
-		   //		 i,
 		   converter.getId().rawId(),
 		   eid.readoutVMECrateId(), eid.htrSlot(), eid.htrTopBottom()>0?'t':'b', eid.dccid(), eid.spigot(), eid.fiberIndex(), eid.fiberChanId(),
 		   converter.getFlavor ().c_str (), converter.getField1 ().c_str (), converter.getField2 ().c_str (), converter.getField3 ().c_str ()
 		   );
 	} else {
 	  sprintf (buf, " %7X %3d %3d   u %4d %7d %10d %14d %7s %5s %5s %6s",
-		   //		 i,
 		   converter.getId().rawId(),
-//		   eid.crateId(), eid.slot(), 0, eid.slot(), eid.fiberIndex(), eid.fiberChanId(),
 		   eid.crateId(), eid.slot(), 0, 0, eid.fiberIndex(), eid.fiberChanId(),
 		   converter.getFlavor ().c_str (), converter.getField1 ().c_str (), converter.getField2 ().c_str (), converter.getField3 ().c_str ()
 		   );
@@ -1441,9 +1337,8 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalElectronicsMap&
   return true;
 }
 
-
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalLutMetadata* fObject){
-  if (!fObject) return false; //fObject = new HcalLutMetadata;
+template<> auto HcalDbASCIIIO::getObject<HcalLutMetadata>(std::istream& fInput, const HcalTopology* topo){
+  auto fObject = std::make_unique<HcalLutMetadata>(topo);
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
@@ -1467,17 +1362,14 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalLutMetadata* fObject){
     }
     DetId id = getId (items);
     
-    HcalLutMetadatum * fCondObject = new HcalLutMetadatum(id,
+    auto fCondObject = std::make_unique<HcalLutMetadatum>(id,
 							  atof (items [4].c_str()),
 							  atoi (items [5].c_str()),
 							  atoi (items [6].c_str()));
     fObject->addValues(*fCondObject);
-    delete fCondObject;
   }
-  return true;
+  return fObject;
 }
-
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalLutMetadata& fObject){
   char buffer [1024];
   const float _rctLsb = fObject.getRctLsb();
@@ -1509,9 +1401,8 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalLutMetadata& fO
   return true;
 }
 
-//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-bool HcalDbASCIIIO::getObject(std::istream& fInput, HcalDcsValues * fObject) {
-  if (!fObject) return false; //fObject = new HcalDcsValues;
+template<> auto HcalDbASCIIIO::getObject<HcalDcsValues>(std::istream& fInput, const HcalTopology* topo) {
+  auto fObject = std::make_unique<HcalDcsValues>(topo);
   std::string buffer;
   while (getline(fInput, buffer)) {
     if (buffer.at(0) == '#') continue; //ignore comment
@@ -1542,10 +1433,8 @@ bool HcalDbASCIIIO::getObject(std::istream& fInput, HcalDcsValues * fObject) {
     default:
       continue;
     }
-    //from_string<int>(subd, items[0], std::dec);
     from_string<int>(sidering, items[1], std::dec);
     from_string<unsigned int>(slice, items[2], std::dec);
-    //from_string<int>(ty, items[3], std::dec);
     from_string<unsigned int>(subchan, items[4], std::dec);
 
     HcalDcsDetId newId(subd, sidering, slice, 
@@ -1559,27 +1448,19 @@ bool HcalDbASCIIIO::getObject(std::istream& fInput, HcalDcsValues * fObject) {
     from_string<float>(lower, items[8], std::dec);
 
     HcalDcsValue newVal(newId.rawId(),LS,val,upper,lower);
-//     std::cout << buffer << '\n';
-//     std::cout << subd << ' ' << sidering << ' ' << slice << ' '
-// 	      << ty << ' ' << subchan << ' ' << LS << ' '
-// 	      << val << ' ' << upper << ' ' << lower << '\n';
-//     std::cout << newId ;
     if (!(fObject->addValue(newVal))) {
       edm::LogWarning("Data Error") << "Data from line " << buffer 
 				    << "\nwas not added to the HcalDcsValues object." << std::endl;
     }
-//     std::cout << std::endl;
   }
   fObject->sortAll();
-  return true;
+  return fObject;
 }
-
 bool HcalDbASCIIIO::dumpObject(std::ostream& fOutput, 
 			       HcalDcsValues const& fObject) {
   fOutput << "# subDet side_ring slice type subChan LS Value UpperLimit LowerLimit DcsId\n";
   for(int subd = HcalDcsValues::HcalHB; 
       subd <= HcalDcsValues::HcalHF; ++subd) {
-//     std::cout << "subd: " << subd << '\n';
     HcalDcsValues::DcsSet const & vals= 
       fObject.getAllSubdetValues(HcalDcsValues::DcsSubDet(subd));
     for (HcalDcsValues::DcsSet::const_iterator val = vals.begin(); 
@@ -1617,11 +1498,6 @@ bool HcalDbASCIIIO::dumpObject(std::ostream& fOutput,
 	      << val->getLowerLimit() << ' ';
       fOutput << std::hex << val->DcsId() << std::dec << '\n';
 
-//       std::cout << valId << ' '
-// 		<< valId.subdet() << ' ' 
-// 		<< val->LS() << ' ' << val->getValue() << ' '
-// 		<< val->getUpperLimit() << ' ' << val->getLowerLimit()
-// 		<< std::endl;
     }
   }
 
@@ -1631,8 +1507,8 @@ bool HcalDbASCIIIO::dumpObject(std::ostream& fOutput,
 
 // Format of the ASCII file:
 // line# Ring Slice Subchannel Subdetector Eta Phi Depth
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalDcsMap* fObject) {
+template<> auto HcalDbASCIIIO::getObject<HcalDcsMap>(std::istream& fInput, const HcalTopology* topo) {
+  auto fObject = std::make_unique<HcalDcsMap>();
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
@@ -1651,49 +1527,6 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalDcsMap* fObject) {
     unsigned int slice = atoi (items [2].c_str());
     unsigned int subchannel = atoi (items [3].c_str());
     HcalDcsDetId::DcsType type = HcalDcsDetId::DCSUNKNOWN;
-//    if(items[4].find("HV")!=std::string::npos){
-//      type = HcalDcsDetId::HV;
-//    }
-//    else if (items[4].find("BV")!=std::string::npos){
-//      type = HcalDcsDetId::BV;
-//    }
-//    else if (items[4].find("CATH")!=std::string::npos){
-//      type = HcalDcsDetId::CATH;
-//    }
-//    else if (items[4].find("DYN7")!=std::string::npos){
-//      type = HcalDcsDetId::DYN7;
-//    }
-//    else if (items[4].find("DYN8")!=std::string::npos){
-//      type = HcalDcsDetId::DYN8;
-//    }
-//    else if (items[4].find("RM_TEMP")!=std::string::npos){
-//      type = HcalDcsDetId::RM_TEMP;
-//    }
-//    else if (items[4].find("CCM_TEMP")!=std::string::npos){
-//      type = HcalDcsDetId::CCM_TEMP;
-//    }
-//    else if (items[4].find("CALIB_TEMP")!=std::string::npos){
-//      type = HcalDcsDetId::CALIB_TEMP;
-//    }
-//    else if (items[4].find("LVTTM_TEMP")!=std::string::npos){
-//      type = HcalDcsDetId::LVTTM_TEMP;
-//    }
-//    else if (items[4].find("TEMP")!=std::string::npos){
-//      type = HcalDcsDetId::TEMP;
-//    }
-//    else if (items[4].find("QPLL_LOCK")!=std::string::npos){
-//      type = HcalDcsDetId::QPLL_LOCK;
-//    }
-//    else if (items[4].find("STATUS")!=std::string::npos){
-//      type = HcalDcsDetId::STATUS;
-//    }
-//    else if (items[4].find("DCS_MAX")!=std::string::npos){
-//      type = HcalDcsDetId::DCS_MAX;
-//    }
-//    else{
-//      edm::LogError("MapFormat") << "HcalDcsMap-> Unknown DCS Type, line is not accepted: " << items[4];
-//      continue;
-//    }
     HcalOtherSubdetector subdet = HcalOtherEmpty;
     if (items[4].find("CALIB")!=std::string::npos){
       subdet = HcalCalibration;
@@ -1731,12 +1564,11 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalDcsMap* fObject) {
     fObject->mapGeomId2DcsId(id, dcsId);
   }
   fObject->sort ();
-  return true;
+  return fObject;
 }
 
 // Format of the ASCII file:
 // line# Ring Slice Subchannel Subdetector Eta Phi Depth
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalDcsMap& fObject) {
   char buf [1024];
   sprintf (buf, "# %7s %10s %6s %8s %7s %5s %5s %6s",
@@ -1766,11 +1598,9 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalDcsMap& fObject
   return true;
 }
 
-
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalFlagHFDigiTimeParams* fObject)
+template<> auto HcalDbASCIIIO::getObject<HcalFlagHFDigiTimeParams>(std::istream& fInput, const HcalTopology* topo)
 {
-  
-  if (!fObject) return false; //fObject = new HcalFlagHFDigiTimeParams();
+  auto fObject = std::make_unique<HcalFlagHFDigiTimeParams>(topo);
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
     if (buffer [0] == '#') continue; //ignore comment
@@ -1784,7 +1614,7 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalFlagHFDigiTimeParams* f
     DetId id = HcalDbASCIIIO::getId (items);
     std::vector<double> coef= splitStringToDoubleByComma(items[8].c_str());
 
-    HcalFlagHFDigiTimeParam* fCondObject = new HcalFlagHFDigiTimeParam(id, 
+    auto fCondObject = std::make_unique<HcalFlagHFDigiTimeParam>(id, 
 								       atoi (items [4].c_str()), //firstSample
 								       atoi (items [5].c_str()), //samplesToAdd
 								       atoi (items [6].c_str()), //expectedPeak
@@ -1792,11 +1622,9 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalFlagHFDigiTimeParams* f
 								       coef // coefficients
 								  );
     fObject->addValues(*fCondObject);
-    delete fCondObject;
   }
-  return true;
-} // getObject (HcalFlagHFDigiTime)
-
+  return fObject;
+}
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalFlagHFDigiTimeParams& fObject)
 {
   char buffer [1024];
@@ -1834,9 +1662,8 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalFlagHFDigiTimeP
   return true;
 }
 
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalFrontEndMap* fObject) {
+template<> auto HcalDbASCIIIO::getObject<HcalFrontEndMap>(std::istream& fInput, const HcalTopology* topo) {
+  auto fObject = std::make_unique<HcalFrontEndMap>();
   char buffer [1024];
   unsigned int all(0), good(0);
   while (fInput.getline(buffer, 1024)) {
@@ -1855,9 +1682,8 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalFrontEndMap* fObject) {
   }
   fObject->sort ();
   edm::LogInfo("MapFormat") << "HcalFrontEndMap:: processed " << good << " records in " << all << " record" << std::endl;
-  return true;
+  return fObject;
 }
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalFrontEndMap& fObject) {
 
   char buffer [1024];
@@ -1877,9 +1703,8 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalFrontEndMap& fO
   return true;
 }
 
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalSiPMParameters* fObject) {
+template<> auto HcalDbASCIIIO::getObject<HcalSiPMParameters>(std::istream& fInput, const HcalTopology* topo) {
+  auto fObject = std::make_unique<HcalSiPMParameters>(topo);
   if (!fObject) return false; 
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
@@ -1892,17 +1717,15 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalSiPMParameters* fObject
     }
     DetId id = HcalDbASCIIIO::getId (items);
     
-    HcalSiPMParameter* obj = new HcalSiPMParameter(id, atoi(items[4].c_str()), 
+    auto obj = std::make_unique<HcalSiPMParameter>(id, atoi(items[4].c_str()), 
 						   atof(items[5].c_str()), 
 						   atof(items[6].c_str()),
 						   atoi(items[7].c_str()),
 						   atof(items[8].c_str()));
     fObject->addValues(*obj);
-    delete obj;
   }
-  return true;
+  return fObject;
 }
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalSiPMParameters& fObject) {
 
   char buffer [1024];
@@ -1928,9 +1751,8 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalSiPMParameters&
   return true;
 }
 
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalSiPMCharacteristics* fObject) {
+template<> auto HcalDbASCIIIO::getObject<HcalSiPMCharacteristics>(std::istream& fInput, const HcalTopology* topo) {
+  auto fObject = std::make_unique<HcalSiPMCharacteristics>();
   char buffer [1024];
   unsigned int all(0), good(0);
   while (fInput.getline(buffer, 1024)) {
@@ -1955,9 +1777,8 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalSiPMCharacteristics* fO
   }
   fObject->sort ();
   edm::LogInfo("MapFormat") << "HcalSiPMCharacteristics:: processed " << good << " records in " << all << " record" << std::endl;
-  return true;
+  return fObject;
 }
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalSiPMCharacteristics& fObject) {
 
   char buffer [1024];
@@ -1984,9 +1805,8 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalSiPMCharacteris
   return true;
 }
 
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalTPChannelParameters* fObject) {
+template<> auto HcalDbASCIIIO::getObject<HcalTPChannelParameters>(std::istream& fInput, const HcalTopology* topo) {
+  auto fObject = std::make_unique<HcalTPChannelParameters>(topo);
   if (!fObject) return false; 
   char buffer [1024];
   while (fInput.getline(buffer, 1024)) {
@@ -1999,19 +1819,16 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalTPChannelParameters* fO
     }
     DetId id = HcalDbASCIIIO::getId (items);
     
-    HcalTPChannelParameter* obj = new HcalTPChannelParameter(id.rawId(), 
+    auto obj = std::make_unique<HcalTPChannelParameter>(id.rawId(),
 							     atoi(items[4].c_str()),
 							     atoi(items[5].c_str()),
 							     atoi(items[6].c_str()),
 							     atoi(items[7].c_str()));
     fObject->addValues(*obj);
-    delete obj;
   }
-  return true;
+  return fObject;
 }
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalTPChannelParameters& fObject) {
-
   char buffer [1024];
   sprintf (buffer, "# %15s %15s %15s %15s %15s %15s %15s %15s\n", 
 	   "eta", "phi", "dep", "det", "Mask", "FGBitInfo", "auxi1", "auxi2");
@@ -2032,9 +1849,8 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalTPChannelParame
   return true;
 }
 
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalTPParameters* fObject) {
+template<> auto HcalDbASCIIIO::getObject<HcalTPParameters>(std::istream& fInput, const HcalTopology* topo) {
+  auto fObject = std::make_unique<HcalTPParameters>();
   char buffer [1024];
   unsigned int all(0), good(0);
   while (fInput.getline(buffer, 1024)) {
@@ -2046,7 +1862,6 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalTPParameters* fObject) 
       continue;
     }
     ++good;
-    //    std::cout << "HcalTPParameters-> processing line: " << buffer << std::endl;
     int      version = atoi (items [0].c_str());
     int      adcCut  = atoi (items [1].c_str());
     uint64_t tdcMask = strtoull(items [2].c_str(),NULL,16);
@@ -2057,9 +1872,8 @@ bool HcalDbASCIIIO::getObject (std::istream& fInput, HcalTPParameters* fObject) 
     break;
   }
   edm::LogInfo("MapFormat") << "HcalTPParameters:: processed " << good << " records in " << all << " record" << std::endl;
-  return true;
+  return fObject;
 }
-
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalTPParameters& fObject) {
 
   char buffer [1024];
@@ -2079,8 +1893,6 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalTPParameters& f
 
   return true;
 }
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalCalibrationsSet& fObject) {
   char buffer [1024];
