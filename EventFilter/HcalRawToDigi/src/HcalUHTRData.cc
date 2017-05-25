@@ -35,19 +35,30 @@ void HcalUHTRData::const_iterator::determineMode() {
   else if (m_flavor == 2) { m_stepclass=2; }
 }
 
+int HcalUHTRData::const_iterator::errFlags() const {
+  if (m_flavor==6 && !isHeader()) return ((*m_ptr)>>11)&0x1;
+  else return ((*m_ptr)>>10)&0x3;
+}
+
+bool HcalUHTRData::const_iterator::dataValid() const {
+  if (m_flavor==6 && !isHeader()) return ((*m_ptr)>>10)&0x1;
+  else return !(errFlags()&0x2);
+}
+
 uint8_t HcalUHTRData::const_iterator::adc() const {
   if (m_flavor==0x5 && m_microstep==0) return ((*m_ptr)>>8)&0x7F;
+  else if (m_flavor==6) return (*m_ptr)&0x7F;
   else return (*m_ptr)&0xFF;
 }
 
 uint8_t HcalUHTRData::const_iterator::le_tdc() const {
-  if (m_flavor==0x5) return 0x80;
+  if (m_flavor==5 || m_flavor==6) return 0x80;
   else if (m_flavor == 2) return (m_ptr[1]&0x3F);
   else return (((*m_ptr)&0x3F00)>>8);
 }
 
 bool HcalUHTRData::const_iterator::soi() const {
-  if (m_flavor==0x5) return false;
+  if (m_flavor==5 || m_flavor==6) return false;
   else if (m_flavor == 2) return (m_ptr[0]&0x2000);
   else return (((*m_ptr)&0x4000));
 }
@@ -64,6 +75,9 @@ uint8_t HcalUHTRData::const_iterator::capid() const {
     // to count the number of data rows and figure out which cap we want,
     // knowing that they go 0->1->2->3->0
     return 0;
+  }
+  else if (m_flavor == 6) {
+    return ((*m_ptr)>>8)&0x3;
   }
   else { return 0; }
 }

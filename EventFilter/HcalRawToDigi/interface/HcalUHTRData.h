@@ -43,7 +43,8 @@ class HcalUHTRData {
     
     bool isHeader() const { return ((*m_ptr)&0x8000)!=0; }    
     int flavor() const { return ((*m_ptr)>>12)&0x7; }    
-    int errFlags() const { return ((*m_ptr)>>10)&0x3; }    
+    int errFlags() const;
+    bool dataValid() const;
     int capid0() const { return ((*m_ptr)>>8)&0x3; }    
     int channelid() const { return ((*m_ptr))&0xFF; }    
 
