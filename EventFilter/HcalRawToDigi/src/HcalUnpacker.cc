@@ -83,8 +83,9 @@ namespace HcalUnpacker_impl {
 	int capidn=(isCapRotating)?((capid0+ncurr)%4):(capid0);
 	int capidn1=(isCapRotating)?((capid0+ncurr+1)%4):(capid0);
 	// two samples in one...
-	HcalQIESample s0((*qie_work)&0x7F,capidn,fiber,fiberchan,dataValid,fiberErr);
-	HcalQIESample s1(((*qie_work)>>8)&0x7F,capidn1,fiber,fiberchan,dataValid,fiberErr);
+    // with error bit after 7 ADC bits
+	HcalQIESample s0((*qie_work)&0x7F,capidn,fiber,fiberchan,dataValid,((*qie_work)>>7)&0x1);
+	HcalQIESample s1(((*qie_work)>>8)&0x7F,capidn1,fiber,fiberchan,dataValid,((*qie_work)>>15)&0x1);
 	
 	if (ncurr>=startSample && ncurr<=endSample) {
 	  digi.setSample(ntaken,s0);
@@ -629,7 +630,7 @@ void HcalUnpacker::unpackUTCA(const FEDRawData& raw, const HcalElectronicsMap& e
           }
           else if (colls.qie11->samples() != ns) {
               // This is horrible
-              edm::LogError("Invalid Data") << "Collection has " << colls.qie11->samples() << " samples per digi, raw data has " << ns << "!";
+              edm::LogError("Invalid Data") << "QIE11 Collection has " << colls.qie11->samples() << " samples per digi, raw data has " << ns << "!";
               return;
           }
 
@@ -671,7 +672,7 @@ void HcalUnpacker::unpackUTCA(const FEDRawData& raw, const HcalElectronicsMap& e
 	}
 	else if (colls.qie10ZDC->samples() != ns) {
 	  // This is horrible
-	  edm::LogError("Invalid Data") << "Collection has " << colls.qie10ZDC->samples() << " samples per digi, raw data has " << ns << "!";
+	  edm::LogError("Invalid Data") << "QIE10ZDC Collection has " << colls.qie10ZDC->samples() << " samples per digi, raw data has " << ns << "!";
 	  return;
 	}
 	
@@ -680,7 +681,7 @@ void HcalUnpacker::unpackUTCA(const FEDRawData& raw, const HcalElectronicsMap& e
 	}
 	else if (colls.qie10->samples() != ns) {
 	  // This is horrible
-	  edm::LogError("Invalid Data") << "Collection has " << colls.qie10->samples() << " samples per digi, raw data has " << ns << "!";
+	  edm::LogError("Invalid Data") << "QIE10 Collection has " << colls.qie10->samples() << " samples per digi, raw data has " << ns << "!";
 	  return;
 	}
 

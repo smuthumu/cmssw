@@ -470,8 +470,12 @@ public:
        uint16_t cont =0;
        int adc0 = qiedf->sample(iTS).adc();
        int adc1 = qiedf->sample(iTS+1).adc();
-       cont |= adc0&0xFF;
-       cont |= (adc1&0xFF)<<8;
+       int er0 = qiedf->sample(iTS).er();
+       int er1 = qiedf->sample(iTS+1).er();
+       cont |= adc0&0x7F;
+       cont |= (er0&0x1)<<7;
+       cont |= (adc1&0x7F)<<8;
+       cont |= (er1&0x1)<<15;
        uhtrs[uhtrIndex].push_back(cont);
     }// end loop over dataframe words
   };
@@ -487,8 +491,12 @@ public:
        uint16_t cont =0;
        int adc0 = qiedf->sample(iTS).adc();
        int adc1 = qiedf->sample(iTS+1).adc();
-       cont |= adc0&0xFF;
-       cont |= (adc1&0xFF)<<8;
+       int er0 = qiedf->sample(iTS).er();
+       int er1 = qiedf->sample(iTS+1).er();
+       cont |= adc0&0x7F;
+       cont |= (er0&0x1)<<7;
+       cont |= (adc1&0x7F)<<8;
+       cont |= (er1&0x1)<<15;
        uhtrs[uhtrIndex].push_back(cont);
     }// end loop over dataframe words
   };
