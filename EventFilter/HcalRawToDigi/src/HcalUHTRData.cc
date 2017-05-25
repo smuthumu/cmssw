@@ -3,7 +3,9 @@
 
 static const int HEADER_LENGTH_16BIT=2*sizeof(uint64_t)/sizeof(uint16_t);
 
-HcalUHTRData::const_iterator::const_iterator(const uint16_t* ptr, const uint16_t* limit) : m_ptr(ptr), m_limit(limit), m_stepclass(0) {
+HcalUHTRData::const_iterator::const_iterator(const uint16_t* ptr, const uint16_t* limit, bool premix) : 
+  m_ptr(ptr), m_limit(limit), m_stepclass(0), m_premix(premix)
+{
   if (isHeader()) determineMode();
 }
 
@@ -33,21 +35,33 @@ void HcalUHTRData::const_iterator::determineMode() {
   m_stepclass=0;
   if (m_flavor==5) { m_stepclass=1; m_microstep=0; }
   else if (m_flavor == 2) { m_stepclass=2; }
+  if (m_flavor!=4) { m_premix = false; } //premix sim mode only for flavor 4
+}
+
+int HcalUHTRData::const_iterator::errFlags() const {
+  if ((m_flavor==4 && m_premix) && !isHeader()) return ((*m_ptr)>>11)&0x1;
+  else return ((*m_ptr)>>10)&0x3;
+}
+
+bool HcalUHTRData::const_iterator::dataValid() const {
+  if ((m_flavor==4 && m_premix) && !isHeader()) return ((*m_ptr)>>10)&0x1;
+  else return !(errFlags()&0x2);
 }
 
 uint8_t HcalUHTRData::const_iterator::adc() const {
-  if (m_flavor==0x5 && m_microstep==0) return ((*m_ptr)>>8)&0x7F;
+  if (m_flavor==5 && m_microstep==0) return ((*m_ptr)>>8)&0x7F;
+  else if (m_flavor==4 && m_premix) return (*m_ptr)&0x7F;
   else return (*m_ptr)&0xFF;
 }
 
 uint8_t HcalUHTRData::const_iterator::le_tdc() const {
-  if (m_flavor==0x5) return 0x80;
+  if (m_flavor==5 || (m_flavor==4 && m_premix)) return 0x80;
   else if (m_flavor == 2) return (m_ptr[1]&0x3F);
   else return (((*m_ptr)&0x3F00)>>8);
 }
 
 bool HcalUHTRData::const_iterator::soi() const {
-  if (m_flavor==0x5) return false;
+  if (m_flavor==5 || (m_flavor==4 && m_premix)) return false;
   else if (m_flavor == 2) return (m_ptr[0]&0x2000);
   else return (((*m_ptr)&0x4000));
 }
@@ -59,6 +73,9 @@ uint8_t HcalUHTRData::const_iterator::te_tdc() const {
 
 uint8_t HcalUHTRData::const_iterator::capid() const {
   if (m_flavor==2) return(m_ptr[1]>>12)&0x3;
+  else if (m_flavor == 4 && m_premix) {
+    return ((*m_ptr)>>8)&0x3;
+  }
   else if (m_flavor == 1 || m_flavor == 0) {
     // For flavor 0,1 we only get the first capid in the header, and so we need
     // to count the number of data rows and figure out which cap we want,
@@ -70,16 +87,16 @@ uint8_t HcalUHTRData::const_iterator::capid() const {
 
 bool HcalUHTRData::const_iterator::ok() const {
   if (m_flavor == 2) { return (m_ptr[0]>>12)&0x1; }
-  else if (m_flavor == 4) { return (m_ptr[0]>>13)&0x1; }
+  else if (m_flavor == 4 && !m_premix) { return (m_ptr[0]>>13)&0x1; }
   else { return false; }
 }
 
 HcalUHTRData::const_iterator HcalUHTRData::begin() const {
-  return HcalUHTRData::const_iterator(m_raw16+HEADER_LENGTH_16BIT,m_raw16+(m_rawLength64-1)*sizeof(uint64_t)/sizeof(uint16_t));
+  return HcalUHTRData::const_iterator(m_raw16+HEADER_LENGTH_16BIT,m_raw16+(m_rawLength64-1)*sizeof(uint64_t)/sizeof(uint16_t),wasSimulatedHTR());
 }
 
 HcalUHTRData::const_iterator HcalUHTRData::end() const {
-  return HcalUHTRData::const_iterator(m_raw16+(m_rawLength64-1)*sizeof(uint64_t)/sizeof(uint16_t),m_raw16+(m_rawLength64-1)*sizeof(uint64_t)/sizeof(uint16_t));
+  return HcalUHTRData::const_iterator(m_raw16+(m_rawLength64-1)*sizeof(uint64_t)/sizeof(uint16_t),m_raw16+(m_rawLength64-1)*sizeof(uint64_t)/sizeof(uint16_t),wasSimulatedHTR());
 }
 
 HcalUHTRData::HcalUHTRData() : m_formatVersion(-2), m_rawLength64(0), m_raw64(0), m_raw16(0), m_ownData(0) { }

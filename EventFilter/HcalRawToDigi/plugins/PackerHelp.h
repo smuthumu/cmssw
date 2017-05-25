@@ -144,6 +144,17 @@ namespace TPHeaderSpec{
   static const int MASK_HEADER_BIT = 0x1;
 }
 
+namespace QIE8SampleSpec{
+  static const int OFFSET_ADC = 0;
+  static const int MASK_ADC = 0x7F;
+  static const int OFFSET_CAPID = 8;
+  static const int MASK_CAPID = 0x3;
+  static const int OFFSET_DV = 10;
+  static const int MASK_DV = 0x1;
+  static const int OFFSET_ER = 11;
+  static const int MASK_ER = 0x1;
+}
+
 class HCalFED{
 
 public:
@@ -324,6 +335,7 @@ public:
   static const int MASK_PAYLOAD_FORMAT = 0xF;
   static const int OFFSET_FW_VERSION = 48;
   static const int MASK_FW_VERSION = 0xFFFF;
+  static const int MASK_PRESAMPLES_MSB = 0x8000;
 
   UHTRpacker(){}
 
@@ -331,7 +343,8 @@ public:
     return uhtrs.count(uhtrIndex) != 0  ; 
   };
 
-  uint16_t packQIE8header(const HcalQIESample &qieSample, const HcalElectronicsId &eid){
+  // flavor should be 5, or 4 (only for premixing in sim)
+  uint16_t packQIE8header(const HcalQIESample &qieSample, const HcalElectronicsId &eid, int flavor){
      uint16_t header =0;
 
      int fiber = eid.fiberIndex()+1;
@@ -343,10 +356,26 @@ public:
      header |= ((fiber-1) & QIE8HeaderSpec::MASK_FIBER)<<QIE8HeaderSpec::OFFSET_FIBER;
      header |= (capid0 & QIE8HeaderSpec::MASK_CAPID)<<QIE8HeaderSpec::OFFSET_CAPID;
      header |= (fiberErr & QIE8HeaderSpec::MASK_FIBERERR)<<QIE8HeaderSpec::OFFSET_FIBERERR;
-     header |= (0x5 & QIE8HeaderSpec::MASK_FLAVOR)<<QIE8HeaderSpec::OFFSET_FLAVOR; //flavor
+     header |= (flavor & QIE8HeaderSpec::MASK_FLAVOR)<<QIE8HeaderSpec::OFFSET_FLAVOR; //flavor
      header |= (0x1 & QIE8HeaderSpec::MASK_HEADER_BIT)<<QIE8HeaderSpec::OFFSET_HEADER_BIT;
 
      return header;
+  }
+
+  uint16_t packQIE8sample(const HcalQIESample &qieSample){
+     uint16_t sample = 0;
+
+     int adc = qieSample.adc();
+     int capid = qieSample.capid();
+     int dv = qieSample.dv();
+     int er = qieSample.er();
+
+     sample |= (adc & QIE8SampleSpec::MASK_ADC)<<QIE8SampleSpec::OFFSET_ADC;
+     sample |= (capid & QIE8SampleSpec::MASK_CAPID)<<QIE8SampleSpec::OFFSET_CAPID;
+     sample |= (dv & QIE8SampleSpec::MASK_DV)<<QIE8SampleSpec::OFFSET_DV;
+     sample |= (er & QIE8SampleSpec::MASK_ER)<<QIE8SampleSpec::OFFSET_ER;
+
+     return sample;
   }
 
   uint16_t packTPheader(const HcalTriggerPrimitiveSample &tpSample, int channelid){
@@ -395,7 +424,7 @@ public:
      return header;
   }
 
-  uhtrData* newUHTR( int uhtrIndex , int ps = 0, int orn = 0 , int bcn = 0 , uint64_t evt = 0 ){
+  uhtrData* newUHTR( int uhtrIndex , int ps, bool specialSimPremixBit = false, int orn = 0 , int bcn = 0 , uint64_t evt = 0 ){
     
     // initialize vector of 16-bit words
     uhtrs[uhtrIndex] = uhtrData(8);
@@ -426,6 +455,12 @@ public:
     uhtrHeader2 |= (eventType&MASK_EVENT_TYPE)<<OFFSET_EVENT_TYPE;
     uhtrHeader2 |= (payloadFormat&MASK_PAYLOAD_FORMAT)<<OFFSET_PAYLOAD_FORMAT;
     uhtrHeader2 |= (fwVersion&MASK_FW_VERSION)<<OFFSET_FW_VERSION;
+
+    //special setting to keep QIE8 error bits for premixing in simulation:
+    //set MSB of presamples
+    if(specialSimPremixBit){
+        uhtrHeader2 |= MASK_PRESAMPLES_MSB;
+    }
 
     // push header into vector of 16-bit words
     for (unsigned int i = 0; i< 4; ++i){
@@ -459,37 +494,51 @@ public:
     uhtr->push_back( 0 );
   };
 
-  void addChannel( int uhtrIndex , edm::SortedCollection<HFDataFrame>::const_iterator& qiedf , const HcalElectronicsMap* readoutMap, int verbosity = 0 ){
+  void addChannel( int uhtrIndex , edm::SortedCollection<HFDataFrame>::const_iterator& qiedf , const HcalElectronicsMap* readoutMap, bool premix, int verbosity = 0 ){
     if( qiedf->size() == 0 ) return;
     DetId detid = qiedf->id();
     HcalElectronicsId eid(readoutMap->lookup(detid));
-    uint16_t header = packQIE8header(qiedf->sample(0), eid);
+    uint16_t header = packQIE8header(qiedf->sample(0), eid, premix ? 4 : 5);
     uhtrs[uhtrIndex].push_back(header);
     // loop over words in dataframe
-    for(int iTS = 0; iTS < qiedf->size(); iTS +=2 ){
-       uint16_t cont =0;
-       int adc0 = qiedf->sample(iTS).adc();
-       int adc1 = qiedf->sample(iTS+1).adc();
-       cont |= adc0&0xFF;
-       cont |= (adc1&0xFF)<<8;
-       uhtrs[uhtrIndex].push_back(cont);
+    if(premix){
+      for(int iTS = 0; iTS < qiedf->size(); ++iTS){
+         uhtrs[uhtrIndex].push_back(packQIE8sample(qiedf->sample(iTS)));
+      }
+    }
+    else {
+      for(int iTS = 0; iTS < qiedf->size(); iTS +=2 ){
+         uint16_t cont =0;
+         int adc0 = qiedf->sample(iTS).adc();
+         int adc1 = qiedf->sample(iTS+1).adc();
+         cont |= adc0&0xFF;
+         cont |= (adc1&0xFF)<<8;
+         uhtrs[uhtrIndex].push_back(cont);
+      }
     }// end loop over dataframe words
   };
 
-  void addChannel( int uhtrIndex , edm::SortedCollection<HBHEDataFrame>::const_iterator qiedf , const HcalElectronicsMap* readoutMap, int verbosity = 0 ){
+  void addChannel( int uhtrIndex , edm::SortedCollection<HBHEDataFrame>::const_iterator qiedf , const HcalElectronicsMap* readoutMap, bool premix, int verbosity = 0 ){
     if( qiedf->size() == 0 ) return;
     DetId detid = qiedf->id();
     HcalElectronicsId eid(readoutMap->lookup(detid));
-    uint16_t header = packQIE8header(qiedf->sample(0), eid);
+    uint16_t header = packQIE8header(qiedf->sample(0), eid, premix ? 4 : 5);
     uhtrs[uhtrIndex].push_back(header);
     // loop over words in dataframe
-    for(int iTS = 0; iTS < qiedf->size(); iTS +=2 ){
-       uint16_t cont =0;
-       int adc0 = qiedf->sample(iTS).adc();
-       int adc1 = qiedf->sample(iTS+1).adc();
-       cont |= adc0&0xFF;
-       cont |= (adc1&0xFF)<<8;
-       uhtrs[uhtrIndex].push_back(cont);
+    if(premix){
+      for(int iTS = 0; iTS < qiedf->size(); ++iTS){
+         uhtrs[uhtrIndex].push_back(packQIE8sample(qiedf->sample(iTS)));
+      }
+    }
+    else {
+      for(int iTS = 0; iTS < qiedf->size(); iTS +=2 ){
+         uint16_t cont =0;
+         int adc0 = qiedf->sample(iTS).adc();
+         int adc1 = qiedf->sample(iTS+1).adc();
+         cont |= adc0&0xFF;
+         cont |= (adc1&0xFF)<<8;
+         uhtrs[uhtrIndex].push_back(cont);
+      }
     }// end loop over dataframe words
   };
 
@@ -508,7 +557,7 @@ public:
     DetId detid = qiedf.detid();
     HcalElectronicsId eid(readoutMap->lookup(detid));
     // loop over words in dataframe
-    for(edm::DataFrame::iterator dfi=qiedf.begin() ; dfi!=qiedf.end(); ++dfi){      
+    for(edm::DataFrame::iterator dfi=qiedf.begin() ; dfi!=qiedf.end(); ++dfi){
       if( dfi >= qiedf.end()-QIE11DataFrame::FLAG_WORDS ){
          continue;
       }

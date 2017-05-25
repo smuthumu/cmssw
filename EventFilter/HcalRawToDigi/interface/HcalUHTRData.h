@@ -39,11 +39,12 @@ class HcalUHTRData {
   
   class const_iterator {
   public:
-    const_iterator(const uint16_t* ptr, const uint16_t* limit=0);
+    const_iterator(const uint16_t* ptr, const uint16_t* limit=0, bool premix=false);
     
     bool isHeader() const { return ((*m_ptr)&0x8000)!=0; }    
     int flavor() const { return ((*m_ptr)>>12)&0x7; }    
-    int errFlags() const { return ((*m_ptr)>>10)&0x3; }    
+    int errFlags() const;
+    bool dataValid() const;
     int capid0() const { return ((*m_ptr)>>8)&0x3; }    
     int channelid() const { return ((*m_ptr))&0xFF; }    
 
@@ -72,6 +73,7 @@ class HcalUHTRData {
     int m_microstep;
     int m_stepclass;
     int m_flavor;
+    bool m_premix;
   };    
 
   const_iterator begin() const;
@@ -91,8 +93,8 @@ class HcalUHTRData {
   inline uint32_t crateId() const { return uint32_t(m_raw64[1])&0xFF; }
   /** \brief Get the board slot */
   inline uint32_t slot() const { return uint32_t(m_raw64[1]>>8)&0xF; }
-  /** \brief Get the presamples */
-  inline uint32_t presamples() const { return uint32_t(m_raw64[1]>>12)&0xF; }
+  /** \brief Get the presamples, clearing last bit */
+  inline uint32_t presamples() const { return uint32_t((m_raw64[1]&~0x8000)>>12)&0xF; }
 
   /** \brief Was this channel passed as part of Mark&Pass ZS?*/
   bool wasMarkAndPassZS(int fiber, int fiberchan) const;
@@ -104,6 +106,8 @@ class HcalUHTRData {
   /** \brief Get the HTR firmware flavor */
   int getFirmwareFlavor() const { return uint32_t(m_raw64[1]>>32)&0xFF; }
 
+  //** \brief Check for simulated HTR with error bits kept */
+  bool wasSimulatedHTR() const { return (((m_raw64[1]&0x8000)>>15)&0x1)==1; }
 
 protected:
   int m_formatVersion;
