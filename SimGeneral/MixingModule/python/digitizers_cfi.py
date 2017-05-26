@@ -52,6 +52,9 @@ phase2_hgcal.toModify( theDigitizers,
                             hgchefrontDigitizer = cms.PSet(hgchefrontDigitizer),
 )
 
+from Configuration.Eras.Modifier_run3_common_cff import run3_common
+run3_common.toModify( theDigitizers, castor = None )
+
 from Configuration.Eras.Modifier_phase2_common_cff import phase2_common
 phase2_common.toModify( theDigitizers, castor = None )
 

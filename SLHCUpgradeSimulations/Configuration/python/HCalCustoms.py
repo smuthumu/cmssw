@@ -136,6 +136,39 @@ def customise_Hcal2017Full(process):
         process.simHcalTriggerPrimitiveDigis.upgradeHE = cms.bool(True)
 
     return process
+
+def customise_Hcal2019(process):
+    process=load_HcalHardcode(process)
+    process.es_hardcode.useHBUpgrade = cms.bool(True)
+    process.es_hardcode.useHEUpgrade = cms.bool(True)
+    process.es_hardcode.useHFUpgrade = cms.bool(True)
+
+    # to get reco to run
+    if hasattr(process,'DigiToRaw'):
+        process=customise_DigiToRaw(process)
+    if hasattr(process,'RawToDigi'):
+        process=customise_RawToDigi(process)
+    if hasattr(process,'reconstruction_step'):
+        process.hbheprereco.digiLabelQIE8 = cms.InputTag("simHcalDigis")
+        process.hbheprereco.digiLabelQIE11 = cms.InputTag("simHcalDigis","HBHEQIE11DigiCollection")
+        process.horeco.digiLabel = cms.InputTag("simHcalDigis")
+        process.zdcreco.digiLabel = cms.InputTag("simHcalUnsuppressedDigis")
+        process.zdcreco.digiLabelhcal = cms.InputTag("simHcalUnsuppressedDigis")
+        process.hcalnoise.digiCollName = cms.string('simHcalDigis')
+        process.hfprereco.digiLabel = cms.InputTag("simHcalDigis", "HFQIE10DigiCollection")
+    if hasattr(process,'datamixing_step'):
+        process=customise_mixing(process)
+    if hasattr(process,'dqmoffline_step'):
+        process.digiTask.tagHBHE = cms.untracked.InputTag("simHcalDigis")
+        process.digiTask.tagHF = cms.untracked.InputTag("simHcalDigis")
+        process.digiTask.tagHO = cms.untracked.InputTag("simHcalDigis")
+        process.digiPhase1Task.tagHBHE = cms.untracked.InputTag("simHcalDigis","HBHEQIE11DigiCollection")
+        process.digiPhase1Task.tagHO = cms.untracked.InputTag("simHcalDigis")
+        process.digiPhase1Task.tagHF = cms.untracked.InputTag("simHcalDigis","HFQIE10DigiCollection")
+    if hasattr(process,'validation_step'):
+        process.AllHcalDigisValidation.digiLabel = cms.string("simHcalDigis")
+
+    return process
     
 def customise_HcalPhase1(process):
     process=load_HcalHardcode(process)

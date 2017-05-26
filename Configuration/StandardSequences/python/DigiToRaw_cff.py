@@ -24,6 +24,9 @@ ecalPacker.InstanceEE = 'eeDigis'
 ecalPacker.labelEBSRFlags = "simEcalDigis:ebSrFlags"
 ecalPacker.labelEESRFlags = "simEcalDigis:eeSrFlags"
 
+from Configuration.Eras.Modifier_run3_common_cff import run3_common
+run3_common.toReplaceWith(DigiToRaw, DigiToRaw.copyAndExclude([castorRawData]))
+
 from Configuration.Eras.Modifier_phase2_common_cff import phase2_common
 phase2_common.toReplaceWith(DigiToRaw, DigiToRaw.copyAndExclude([castorRawData]))
 
