@@ -32,10 +32,13 @@ import FWCore.ParameterSet.Config as cms
 # is accumulated using all time slices in the data frame.
 #
 hfprereco = cms.EDProducer("HFPreReconstructor",
-    digiLabel = cms.InputTag("hcalDigis","HFQIE10DigiCollection"),
+    digiLabel = cms.InputTag("hcalDigis"),
     dropZSmarkedPassed = cms.bool(True),
     tsFromDB = cms.bool(False),
     sumAllTimeSlices = cms.bool(False),
     forceSOI = cms.int32(-1),
     soiShift = cms.int32(0)
 )
+
+from Configuration.Eras.Modifier_fastSim_cff import fastSim
+fastSim.toModify(hfprereco, digiLabel = cms.InputTag("hcalDigis","HFQIE10DigiCollection"))
