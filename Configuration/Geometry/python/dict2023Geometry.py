@@ -27,7 +27,7 @@ commonDict = {
         5 : [
             'Geometry/CMSCommonData/data/FieldParameters.xml',
         ],
-        "era" : "run2_common, phase2_common",
+        "era" : "run2_common, run3_common, phase2_common",
     },
     "O2" : {
         1 : [
@@ -54,7 +54,7 @@ commonDict = {
         5 : [
             'Geometry/CMSCommonData/data/FieldParameters.xml',
         ],
-        "era" : "run2_common, phase2_common",
+        "era" : "run2_common, run3_common, phase2_common",
     }    
 }
 
