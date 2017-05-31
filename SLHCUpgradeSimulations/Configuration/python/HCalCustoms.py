@@ -59,11 +59,10 @@ def load_HcalAliases(process):
     )
 
     # keep the content
-    alist=['RAWDEBUG','FEVTDEBUG','FEVTDEBUGHLT','GENRAW','RAWSIMHLT','FEVT']
-    for a in alist:
-        b = a + 'output'
-        if hasattr(process,b):
-            getattr(process,b).outputCommands.extend([
+    for outputModuleName in process.outputModules_():
+        outputModule = getattr(process,outputModuleName)
+        if hasattr(outputModule,"outputCommands"):
+            outputModule.outputCommands.extend([
                 'keep *_hcalDigis_*_*',
                 'drop *_simHcalDigis_*_*',
                 'drop *_simHcalUnsuppressedDigis_*_*',
@@ -93,7 +92,8 @@ def customise_Hcal2019(process):
         process.hltHCALdigisAnalyzer.dataTPs = cms.InputTag("hcalDigis")
 
     # needs to be after deletion of "real" hcalDigis
-    process=load_HcalAliases(process)
+    if hasattr(process,'digitisation_step'):
+        process=load_HcalAliases(process)
 
     return process
 
