@@ -337,6 +337,7 @@ public:
   static const int MASK_PAYLOAD_FORMAT = 0xF;
   static const int OFFSET_FW_VERSION = 48;
   static const int MASK_FW_VERSION = 0xFFFF;
+  static const int MASK_PRESAMPLES_MSB = 0x8000;
 
   UHTRpacker(){}
 
@@ -430,7 +431,7 @@ public:
      return header;
   }
 
-  uhtrData* newUHTR( int uhtrIndex , int ps = 0, int orn = 0 , int bcn = 0 , uint64_t evt = 0 ){
+  uhtrData* newUHTR( int uhtrIndex , int ps, bool specialSimPremixBit = false, int orn = 0 , int bcn = 0 , uint64_t evt = 0 ){
     
     // initialize vector of 16-bit words
     uhtrs[uhtrIndex] = uhtrData(8);
@@ -461,6 +462,12 @@ public:
     uhtrHeader2 |= (eventType&MASK_EVENT_TYPE)<<OFFSET_EVENT_TYPE;
     uhtrHeader2 |= (payloadFormat&MASK_PAYLOAD_FORMAT)<<OFFSET_PAYLOAD_FORMAT;
     uhtrHeader2 |= (fwVersion&MASK_FW_VERSION)<<OFFSET_FW_VERSION;
+
+    //special setting to keep flag word for premixing in simulation:
+    //set MSB of presamples
+    if(specialSimPremixBit){
+        uhtrHeader2 |= MASK_PRESAMPLES_MSB;
+    }
 
     // push header into vector of 16-bit words
     for (unsigned int i = 0; i< 4; ++i){
@@ -557,8 +564,8 @@ public:
     DetId detid = qiedf.detid();
     HcalElectronicsId eid(readoutMap->lookup(detid));
     // loop over words in dataframe
-    for(edm::DataFrame::iterator dfi=qiedf.begin() ; dfi!=qiedf.end(); ++dfi){
-      if( dfi >= qiedf.end()-QIE11DataFrame::FLAG_WORDS ){
+    for(edm::DataFrame::iterator dfi=qiedf.begin() ; dfi!=qiedf.end(); ++dfi){      
+      if( dfi >= qiedf.end() ){ //include flag word
          continue;
       }
       if( dfi == qiedf.begin() && QIE11DataFrame::HEADER_WORDS == 1 ){
