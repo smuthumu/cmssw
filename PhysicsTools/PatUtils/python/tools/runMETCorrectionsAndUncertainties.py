@@ -956,8 +956,9 @@ class RunMETCorrectionsAndUncertainties(ConfigToolBase):
         
         getattr(process, "patPFMetTxyCorr"+postfix).parameters = xyTags[corScheme+"_25ns"] 
         ##for automatic switch to 50ns / 25ns corrections ==> does not work...
-        #from Configuration.StandardSequences.Eras import eras
+        #from Configuration.Eras.Modifier_run2_50ns_specific_cff import run2_50ns_specific
         #eras.run2_50ns_specific.toModify( getattr(process, "patPFMetTxyCorr"+postfix) , parameters=xyTags[corScheme+"_50ns"] )
+        #from Configuration.Eras.Modifier_run2_25ns_specific_cff import run2_25ns_specific
         #eras.run2_25ns_specific.toModify( getattr(process, "patPFMetTxyCorr"+postfix) , parameters=xyTags[corScheme+"_25ns"] )
 
 

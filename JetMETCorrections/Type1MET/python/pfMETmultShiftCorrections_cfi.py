@@ -35,9 +35,11 @@ pfMEtMultShiftCorr = cms.EDProducer("MultShiftMETcorrInputProducer",
 
 pfMEtSysShiftCorrSequence = cms.Sequence( pfMEtMultShiftCorr )
 
-#from Configuration.StandardSequences.Eras import eras
-#eras.run2_common.toModify(pfMEtMultShiftCorr, parameters=multPhiCorrParams_Txy_25ns )
-#eras.run2_50ns_specific.toModify(pfMEtMultShiftCorr, parameters=multPhiCorrParams_Txy_50ns )
-#eras.run2_25ns_specific.toModify(pfMEtMultShiftCorr, parameters=multPhiCorrParams_Txy_25ns )
+#from Configuration.Eras.Modifier_run2_common_cff import run2_common
+#run2_common.toModify(pfMEtMultShiftCorr, parameters=multPhiCorrParams_Txy_25ns )
+#from Configuration.Eras.Modifier_run2_50ns_specific_cff import run2_50ns_specific
+#run2_50ns_specific.toModify(pfMEtMultShiftCorr, parameters=multPhiCorrParams_Txy_50ns )
+#from Configuration.Eras.Modifier_run2_25ns_specific_cff import run2_25ns_specific
+#run2_25ns_specific.toModify(pfMEtMultShiftCorr, parameters=multPhiCorrParams_Txy_25ns )
 
 
