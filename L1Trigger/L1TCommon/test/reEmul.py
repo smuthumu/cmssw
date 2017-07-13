@@ -19,7 +19,6 @@
 
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
-from Configuration.StandardSequences.Eras import eras
 import os
 import sys
 import commands
@@ -41,18 +40,22 @@ options.parseArguments()
 
 if (options.era == 'stage1'):
     print "INFO: runnings L1T Stage-1 (2015) Re-Emulation"
-    process = cms.Process("L1TReEmulation", eras.Run2_25ns)
+    from Configuration.Eras.Era_Run2_25ns_cff import Run2_25ns
+    process = cms.Process("L1TReEmulation",Run2_25ns)
 elif (options.era == 'stage2'):
     print "INFO: runnings L1T Stage-2 (2016) Re-Emulation"    
-    process = cms.Process("L1TReEmulation", eras.Run2_2016)
+    from Configuration.Eras.Era_Run2_2016_cff import Run2_2016
+    process = cms.Process("L1TReEmulation",Run2_2016)
 else:
     print "ERROR: unknown era:  ", options.era, "\n"
     exit(0)
 
+from Configuration.Eras.Modifier_stage1L1Trigger_cff import stage1L1Trigger
+from Configuration.Eras.Modifier_stage2L1Trigger_cff import stage2L1Trigger
 if (options.output == 'DEFAULT'):
-    if (eras.stage1L1Trigger.isChosen()):
+    if (stage1L1Trigger.isChosen()):
         options.output ='l1t_stage1.root'
-    if (eras.stage2L1Trigger.isChosen()):
+    if (stage2L1Trigger.isChosen()):
         options.output ='l1t_stage2.root'
 print "INFO: output:  ", options.output
 
@@ -84,11 +87,11 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 #   best for now to use MC GT, even when running over a data file, and just
 #   ignore the main DT TP emulator warnings...  (In future we'll override only
 #   L1T emulator related conditions, so you can use a data GT)
-if (eras.stage1L1Trigger.isChosen()):
+if (stage1L1Trigger.isChosen()):
     process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 # Note:  For stage-2, all conditions are overriden by local config file.  Use data tag: 
 
-if (eras.stage2L1Trigger.isChosen()):
+if (stage2L1Trigger.isChosen()):
     #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
     process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
     process.GlobalTag.toGet = cms.VPSet(
@@ -123,16 +126,16 @@ process.dumpES = cms.EDAnalyzer("PrintEventSetupContent")
 
 import L1Trigger.L1TCommon.l1tSummaryStage1Digis_cfi
 import L1Trigger.L1TCommon.l1tSummaryStage2Digis_cfi
-if (eras.stage1L1Trigger.isChosen()):
+if (stage1L1Trigger.isChosen()):
     process.l1tSummaryA = L1Trigger.L1TCommon.l1tSummaryStage1Digis_cfi.l1tSummaryStage1Digis.clone()
-if (eras.stage2L1Trigger.isChosen()):
+if (stage2L1Trigger.isChosen()):
     process.l1tSummaryA = L1Trigger.L1TCommon.l1tSummaryStage2Digis_cfi.l1tSummaryStage2Digis.clone()
 
 import L1Trigger.L1TCommon.l1tSummaryStage1SimDigis_cfi
 import L1Trigger.L1TCommon.l1tSummaryStage2SimDigis_cfi
-if (eras.stage1L1Trigger.isChosen()):
+if (stage1L1Trigger.isChosen()):
     process.l1tSummaryB = L1Trigger.L1TCommon.l1tSummaryStage1SimDigis_cfi.l1tSummaryStage1SimDigis.clone()
-if (eras.stage2L1Trigger.isChosen()):
+if (stage2L1Trigger.isChosen()):
     process.l1tSummaryB = L1Trigger.L1TCommon.l1tSummaryStage2SimDigis_cfi.l1tSummaryStage2SimDigis.clone()
 
 # Additional output definition
@@ -177,14 +180,14 @@ process.l1EventTree = cms.EDAnalyzer("L1EventTreeProducer",
 
 # Stage-1 Ntuple will not contain muons, and might (investigating) miss some Taus.  (Work underway)
 process.l1UpgradeTree = cms.EDAnalyzer("L1UpgradeTreeProducer")
-if (eras.stage1L1Trigger.isChosen()):
+if (stage1L1Trigger.isChosen()):
     process.l1UpgradeTree.egToken      = cms.untracked.InputTag("simCaloStage1FinalDigis")
     process.l1UpgradeTree.tauTokens    = cms.untracked.VInputTag("simCaloStage1FinalDigis:rlxTaus","simCaloStage1FinalDigis:isoTaus")
     process.l1UpgradeTree.jetToken     = cms.untracked.InputTag("simCaloStage1FinalDigis")
     process.l1UpgradeTree.muonToken    = cms.untracked.InputTag("None")
     process.l1UpgradeTree.sumToken     = cms.untracked.InputTag("simCaloStage1FinalDigis","")
     process.l1UpgradeTree.maxL1Upgrade = cms.uint32(60)
-if (eras.stage2L1Trigger.isChosen()):
+if (stage2L1Trigger.isChosen()):
     process.l1UpgradeTree.egToken      = cms.untracked.InputTag("simCaloStage2Digis")
     process.l1UpgradeTree.tauTokens    = cms.untracked.VInputTag("simCaloStage2Digis")
     process.l1UpgradeTree.jetToken     = cms.untracked.InputTag("simCaloStage2Digis")
@@ -211,7 +214,7 @@ process.schedule = cms.Schedule(process.L1TPath)
 
 # Re-emulating, so don't unpack L1T output, might not even exist...
 # Also, remove uneeded unpackers for speed.
-if (eras.stage2L1Trigger.isChosen()):
+if (stage2L1Trigger.isChosen()):
     process.L1TSeq.remove(process.gmtStage2Digis)
     process.L1TSeq.remove(process.caloStage2Digis)
     process.L1TSeq.remove(process.gtStage2Digis)
@@ -220,7 +223,7 @@ if (eras.stage2L1Trigger.isChosen()):
     process.L1TSeq.remove(process.castorDigis)
     process.L1TSeq.remove(process.scalersRawToDigi)
     process.L1TSeq.remove(process.tcdsDigis)
-if (eras.stage1L1Trigger.isChosen()):
+if (stage1L1Trigger.isChosen()):
     process.L1TSeq.remove(process.caloStage1Digis)
     process.L1TSeq.remove(process.caloStage1FinalDigis)
     process.L1TSeq.remove(process.gtDigis)

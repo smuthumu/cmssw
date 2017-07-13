@@ -11,11 +11,13 @@ import os, sys, socket, string
 #	Standard CMSSW Imports/Definitions
 #-------------------------------------
 import FWCore.ParameterSet.Config as cms
-from Configuration.StandardSequences.Eras import eras
+from Configuration.Eras.Modifier_run2_HCAL_2017_cff import run2_HCAL_2017
+from Configuration.Eras.Modifier_run2_HF_2017_cff import run2_HF_2017
+from Configuration.Eras.Modifier_run2_HEPlan1_2017_cff import run2_HEPlan1_2017
 process			= cms.Process('HCALDQM', 
-    eras.run2_HCAL_2017, 
-    eras.run2_HF_2017,
-    eras.run2_HEPlan1_2017
+    run2_HCAL_2017, 
+    run2_HF_2017,
+    run2_HEPlan1_2017
 )
 subsystem		= 'Hcal'
 cmssw			= os.getenv("CMSSW_VERSION").split("_")

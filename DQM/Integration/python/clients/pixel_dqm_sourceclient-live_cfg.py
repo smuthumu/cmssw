@@ -1,8 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process("PIXELDQMLIVE", eras.Run2_2017)
+from Configuration.Eras.Era_Run2_2017_cff import Run2_2017
+process = cms.Process("PIXELDQMLIVE",Run2_2017)
 
 live=True  #set to false for lxplus offline testing
 offlineTesting=not live

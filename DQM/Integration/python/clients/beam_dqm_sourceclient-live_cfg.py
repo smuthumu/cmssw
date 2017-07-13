@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
-from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process("BeamMonitor", eras.Run2_2017)
+from Configuration.Eras.Era_Run2_2017_cff import Run2_2017
+process = cms.Process("BeamMonitor",Run2_2017)
 
 #----------------------------------------------                                                                                                                                    
 # Switch to change between firstStep and Pixel

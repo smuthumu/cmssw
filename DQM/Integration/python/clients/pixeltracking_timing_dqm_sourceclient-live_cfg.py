@@ -1,8 +1,8 @@
 import FWCore.ParameterSet.Config as cms
 
-from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process("PixelTrackTimingDQMLive", eras.Run2_2017)
+from Configuration.Eras.Era_Run2_2017_cff import Run2_2017
+process = cms.Process("PixelTrackTimingDQMLive",Run2_2017)
 
 live=True # set to False for Offline testing
 offlineTesting=not live
