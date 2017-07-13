@@ -63,7 +63,3 @@ class Eras (object):
                 if not onlyChosen or getattr(self,e).isChosen(): 
                     self.inspectEra(e,details)
         
-eras=Eras()
-
-
-#eras.inspect()

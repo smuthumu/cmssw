@@ -20,7 +20,7 @@ def run():
         # but when the dump_python branch uses execfile to read it back in it doesn't
         # reload the modules - it picks up a reference to the already loaded ones. 
         if hasattr( options, "era" ) and options.era is not None :
-            from Configuration.StandardSequences.Eras import eras
+            from Configuration.Applications.Eras import eras
             for eraName in options.era.split(',') :
                 getattr( eras, eraName )._setChosen()
         

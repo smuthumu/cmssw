@@ -240,7 +240,7 @@ def OptionsFromItems(items):
         
     # If an "era" argument was supplied make sure it is one of the valid possibilities
     if options.era :
-        from Configuration.StandardSequences.Eras import eras
+        from Configuration.Applications.Eras import eras
         from FWCore.ParameterSet.Config import Modifier, ModifierChain
         # Split the string by commas to check individual eras
         requestedEras = options.era.split(",")

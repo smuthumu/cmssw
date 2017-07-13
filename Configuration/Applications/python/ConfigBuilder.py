@@ -2067,7 +2067,7 @@ class ConfigBuilder(object):
         self.pythonCfgCode += "import FWCore.ParameterSet.Config as cms\n\n"
         eraList = ""
         if hasattr(self._options,"era") and self._options.era :
-            from Configuration.StandardSequences.Eras import eras
+            from Configuration.Applications.Eras import eras
             # Multiple eras can be specified in a comma separated list
             for requestedEra in self._options.era.split(",") :
                 self.pythonCfgCode += eras.pythonCfgLines[requestedEra]+'\n'
