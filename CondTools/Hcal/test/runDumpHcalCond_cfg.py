@@ -73,7 +73,7 @@ if not options.dumplist:
     
 process = cms.Process("DUMP")
 if options.era:
-    from Configuration.StandardSequences.Eras import eras
+    from Configuration.Applications.Eras import eras
     process = cms.Process("DUMP",getattr(eras,options.era))
 
 process.load("CondCore.DBCommon.CondDBSetup_cfi")
@@ -177,7 +177,7 @@ if options.usehardcode:
     process.es_hardcode.toGet.append('GainWidths')
 
 if options.command:
-    cmds = options.command.split('\n')
+    cmds = options.command.split('\\n')
     for cmd in cmds:
         exec(cmd)
 
