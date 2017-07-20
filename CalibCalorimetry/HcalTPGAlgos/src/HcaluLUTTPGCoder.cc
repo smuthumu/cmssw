@@ -290,6 +290,7 @@ void HcaluLUTTPGCoder::update(const HcalDbService& conditions) {
      gain_[lutId] = gain;
      bool isMasked = ( (status & bitToMask_) > 0 );
      float rcalib = meta->getRCalib();
+     unsigned int threshold = meta->getLutThreshold();
 
      // Input LUT for HB/HE/HF
      if (subdet == HcalBarrel || subdet == HcalEndcap){
@@ -299,7 +300,7 @@ void HcaluLUTTPGCoder::update(const HcalDbService& conditions) {
 
         int granularity = meta->getLutGranularity();
 
-        for (unsigned int adc = 0; adc < INPUT_LUT_SIZE; ++adc) {
+        for (unsigned int adc = threshold; adc < INPUT_LUT_SIZE; ++adc) {
            frame.setSample(0,HcalQIESample(adc));
            coder.adc2fC(frame,samples);
            float adc2fC = samples[0];
@@ -311,7 +312,7 @@ void HcaluLUTTPGCoder::update(const HcalDbService& conditions) {
         unsigned short data[] = {0, 0, 0};
         QIE11DataFrame upgradeFrame(edm::DataFrame(0, data, 3));
         CaloSamples upgradeSamples(cell, 1);
-        for (unsigned int adc = 0; adc < UPGRADE_LUT_SIZE; ++adc) {
+        for (unsigned int adc = threshold; adc < UPGRADE_LUT_SIZE; ++adc) {
            upgradeFrame.setSample(0, adc, 0, true);
            coder.adc2fC(upgradeFrame, upgradeSamples);
            float adc2fC = upgradeSamples[0];
@@ -332,7 +333,7 @@ void HcaluLUTTPGCoder::update(const HcalDbService& conditions) {
         frame.setSize(1);
         CaloSamples samples(cell, 1);
 
-        for (unsigned int adc = 0; adc < INPUT_LUT_SIZE; ++adc) {
+        for (unsigned int adc = threshold; adc < INPUT_LUT_SIZE; ++adc) {
            frame.setSample(0,HcalQIESample(adc));
            coder.adc2fC(frame,samples);
            float adc2fC = samples[0];
@@ -343,7 +344,7 @@ void HcaluLUTTPGCoder::update(const HcalDbService& conditions) {
         unsigned short data[] = {0, 0, 0, 0};
         QIE10DataFrame upgradeFrame(edm::DataFrame(0, data, 4));
         CaloSamples upgradeSamples(cell, 1);
-        for (unsigned int adc = 0; adc < UPGRADE_LUT_SIZE; ++adc) {
+        for (unsigned int adc = threshold; adc < UPGRADE_LUT_SIZE; ++adc) {
            upgradeFrame.setSample(0, adc, 0, 0, 0, true);
            coder.adc2fC(upgradeFrame, upgradeSamples);
            float adc2fC = upgradeSamples[0];

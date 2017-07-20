@@ -6,7 +6,7 @@
 /*
 \class HcalLutMetadatum
 \author Gena Kukartsev
-contains RecHit calibration, LUT granularity, output LUT threshold for one HCAL channel
+contains RecHit calibration, LUT granularity, LUT threshold for one HCAL channel
 */
 
 class HcalLutMetadatum
@@ -16,23 +16,23 @@ class HcalLutMetadatum
     HcalLutMetadatum(unsigned long fid,
 		     float rCalib,
 		     uint8_t lutGranularity,
-		     uint8_t outputLutThreshold):
+		     uint8_t LutThreshold):
       mId(fid), 
       mRCalib(rCalib),
       mLutGranularity(lutGranularity),
-      mOutputLutThreshold(outputLutThreshold) {}
+      mLutThreshold(LutThreshold) {}
 
   uint32_t rawId() const {return mId;}
 
   float   getRCalib() const {return mRCalib;}
   uint8_t getLutGranularity() const {return mLutGranularity;}
-  uint8_t getOutputLutThreshold() const {return mOutputLutThreshold;}
+  uint8_t getLutThreshold() const {return mLutThreshold;}
 
  private:
   uint32_t mId;
   float    mRCalib;
   uint8_t  mLutGranularity;
-  uint8_t  mOutputLutThreshold;
+  uint8_t  mLutThreshold;
 
  COND_SERIALIZABLE;
 };

@@ -63,7 +63,7 @@ void CaloTPGTranscoderULUT::loadHCALCompress(HcalLutMetadata const& lutMetadata,
 	unsigned int index = getOutputLUTId(id); 
 
 	const HcalLutMetadatum *meta = lutMetadata.getValues(id);
-	unsigned int threshold	     = meta->getOutputLutThreshold();
+	unsigned int threshold	     = meta->getLutThreshold();
 
 	int ieta=id.ieta();
 	int version=id.version();
