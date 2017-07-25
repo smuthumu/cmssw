@@ -90,6 +90,7 @@ upgradeFragments=['FourMuPt_1_200_pythia8_cfi',
 
 ### remember that you need to add a new step for phase 2 to include the track trigger
 ### remember that you need to add fastsim
+### remember remember the fifth of november
 
 # step1 is normal gen-sim
 # step2 is digi
