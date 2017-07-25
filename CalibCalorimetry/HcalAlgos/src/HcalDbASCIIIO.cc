@@ -1494,7 +1494,7 @@ bool HcalDbASCIIIO::dumpObject (std::ostream& fOutput, const HcalLutMetadata& fO
        ++channel) {
     const float   _rCalib             = fObject.getValues (*channel)->getRCalib();
     const uint8_t _lutGranularity     = fObject.getValues (*channel)->getLutGranularity();
-    const uint8_t _outputLutThreshold = fObject.getValues (*channel)->getputLutThreshold();
+    const uint8_t _outputLutThreshold = fObject.getValues (*channel)->getLutThreshold();
     dumpId (fOutput, *channel);
     sprintf (buffer, " %8.5f %15d %19d %10X\n",
 	     _rCalib,
