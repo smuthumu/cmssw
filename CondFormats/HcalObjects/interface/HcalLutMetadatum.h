@@ -26,7 +26,8 @@ class HcalLutMetadatum
 
   float   getRCalib() const {return mRCalib;}
   uint8_t getLutGranularity() const {return mLutGranularity;}
-  uint8_t getLutThreshold() const {return mLutThreshold;}
+  uint8_t getOutputLutThreshold() const {return mLutThreshold;}
+  uint8_t getInputLutThreshold() const {return mLutThreshold;} // Input and Output LUT thresholds are the same
 
  private:
   uint32_t mId;

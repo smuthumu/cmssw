@@ -290,7 +290,8 @@ void HcaluLUTTPGCoder::update(const HcalDbService& conditions) {
      gain_[lutId] = gain;
      bool isMasked = ( (status & bitToMask_) > 0 );
      float rcalib = meta->getRCalib();
-     unsigned int threshold = meta->getLutThreshold();
+
+     unsigned int threshold = meta->getInputLutThreshold();
 
      for ( unsigned int adc = 0; adc < threshold; adc++)
      {
@@ -298,7 +299,6 @@ void HcaluLUTTPGCoder::update(const HcalDbService& conditions) {
         upgradeQIE10LUT_[lutId][adc] = 0;
         upgradeQIE11LUT_[lutId][adc] = 0;
      }// adc
-
      // Input LUT for HB/HE/HF
      if (subdet == HcalBarrel || subdet == HcalEndcap){
         HBHEDataFrame frame(cell);
