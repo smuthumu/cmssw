@@ -189,7 +189,7 @@ StallMonitor::StallMonitor(ParameterSet const& iPS, ActivityRegistry& iRegistry)
 {
   iRegistry.watchPreModuleConstruction(this, &StallMonitor::preModuleConstruction);
   iRegistry.watchPostBeginJob(this, &StallMonitor::postBeginJob);
-  iRegistry.watchPostModuleEventPrefetching(this, &StallMonitor::postModuleEventPrefetching);
+//  iRegistry.watchPostModuleEventPrefetching(this, &StallMonitor::postModuleEventPrefetching);
   iRegistry.watchPreModuleEvent(this, &StallMonitor::preModuleEvent);
   iRegistry.watchPostEndJob(this, &StallMonitor::postEndJob);
 
@@ -198,8 +198,8 @@ StallMonitor::StallMonitor(ParameterSet const& iPS, ActivityRegistry& iRegistry)
     iRegistry.watchPreSourceEvent(this, &StallMonitor::preSourceEvent);
     iRegistry.watchPostSourceEvent(this, &StallMonitor::postSourceEvent);
     iRegistry.watchPreEvent(this, &StallMonitor::preEvent);
-    iRegistry.watchPreEventReadFromSource(this, &StallMonitor::preEventReadFromSource);
-    iRegistry.watchPostEventReadFromSource(this, &StallMonitor::postEventReadFromSource);
+//    iRegistry.watchPreEventReadFromSource(this, &StallMonitor::preEventReadFromSource);
+//    iRegistry.watchPostEventReadFromSource(this, &StallMonitor::postEventReadFromSource);
     iRegistry.watchPostModuleEvent(this, &StallMonitor::postModuleEvent);
     iRegistry.watchPostEvent(this, &StallMonitor::postEvent);
 
@@ -209,10 +209,10 @@ StallMonitor::StallMonitor(ParameterSet const& iPS, ActivityRegistry& iRegistry)
         << "# preSourceEvent                " << step::preSourceEvent             << "   <Stream ID> <Time since beginJob (ms)>\n"
         << "# postSourceEvent               " << step::postSourceEvent            << "   <Stream ID> <Time since beginJob (ms)>\n"
         << "# preEvent                      " << step::preEvent                   << "   <Stream ID> <Run#> <LumiBlock#> <Event#> <Time since beginJob (ms)>\n"
-        << "# postModuleEventPrefetching    " << step::postModuleEventPrefetching << "   <Stream ID> <Module ID> <Time since beginJob (ms)>\n"
+//        << "# postModuleEventPrefetching    " << step::postModuleEventPrefetching << "   <Stream ID> <Module ID> <Time since beginJob (ms)>\n"
         << "# preModuleEvent                " << step::preModuleEvent             << "   <Stream ID> <Module ID> <Time since beginJob (ms)>\n"
-        << "# preEventReadFromSource        " << step::preEventReadFromSource     << "   <Stream ID> <Module ID> <Time since beginJob (ms)>\n"
-        << "# postEventReadFromSource       " << step::postEventReadFromSource    << "   <Stream ID> <Module ID> <Time since beginJob (ms)>\n"
+//        << "# preEventReadFromSource        " << step::preEventReadFromSource     << "   <Stream ID> <Module ID> <Time since beginJob (ms)>\n"
+//        << "# postEventReadFromSource       " << step::postEventReadFromSource    << "   <Stream ID> <Module ID> <Time since beginJob (ms)>\n"
         << "# postModuleEvent               " << step::postModuleEvent            << "   <Stream ID> <Module ID> <Time since beginJob (ms)>\n"
         << "# postEvent                     " << step::postEvent                  << "   <Stream ID> <Run#> <LumiBlock#> <Event#> <Time since beginJob (ms)>\n";
     file_.write(oss.str());
