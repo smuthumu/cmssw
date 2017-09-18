@@ -110,9 +110,12 @@ void ZdcHitReconstructor::produce(edm::Event& e, const edm::EventSetup& eventSet
      e.getByToken(tok_input_hcal,digi);
      
      if(digi->size() == 0) {
-       e.getByToken(tok_input_castor,digi);
-       if(digi->size() == 0) 
+       edm::Handle<ZDCDigiCollection> digi_castor;
+       e.getByToken(tok_input_castor,digi_castor);
+       if(!digi_castor.isValid() || digi_castor->size() == 0) 
        	 edm::LogInfo("ZdcHitReconstructor") << "No ZDC info found in either castorDigis or hcalDigis." << std::endl;
+       if(digi_castor.isValid())
+         e.getByToken(tok_input_castor,digi);
      }
         
      // create empty output
