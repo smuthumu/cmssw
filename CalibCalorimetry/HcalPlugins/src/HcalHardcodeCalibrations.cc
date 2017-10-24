@@ -7,7 +7,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 #include "FWCore/Framework/interface/ValidityInterval.h"
 #include "FWCore/Framework/interface/ESHandle.h"
@@ -187,25 +186,24 @@ HcalHardcodeCalibrations::HcalHardcodeCalibrations ( const edm::ParameterSet& iC
 
   std::vector <std::string> toGet = iConfig.getUntrackedParameter <std::vector <std::string> > ("toGet");
   for(auto& objectName : toGet){
-    //check for label
-	std::string delim = ":";
-    auto pos = std::find_first_of(objectName.begin(),objectName.end(),delim.begin(),delim.end());
-    std::string label;
-    if(pos!=objectName.end()){
-      label = std::string(pos+1,objectName.end());
-      objectName = std::string(objectName.begin(),pos);
-    }
     bool all = objectName == "all";
-    bool eff = label == "effective";
 #ifdef DebugLog
     std::cout << "Load parameters for " << objectName << std::endl;
 #endif
     if ((objectName == "Pedestals") || all) {
-      setWhatProduced (this, eff ? &HcalHardcodeCalibrations::producePedestalsEffective : &HcalHardcodeCalibrations::producePedestals);
+      setWhatProduced (this, &HcalHardcodeCalibrations::producePedestals);
       findingRecord <HcalPedestalsRcd> ();
     }
     if ((objectName == "PedestalWidths") || all) {
-      setWhatProduced (this, eff ? &HcalHardcodeCalibrations::producePedestalWidthsEffective : &HcalHardcodeCalibrations::producePedestalWidths);
+      setWhatProduced (this, &HcalHardcodeCalibrations::producePedestalWidths);
+      findingRecord <HcalPedestalWidthsRcd> ();
+    }
+    if ((objectName == "PedestalsEffective") || all) {
+      setWhatProduced (this, &HcalHardcodeCalibrations::producePedestalsEffective, edm::es::Label("effective"));
+      findingRecord <HcalPedestalsRcd> ();
+    }
+    if ((objectName == "PedestalWidthsEffective") || all) {
+      setWhatProduced (this, &HcalHardcodeCalibrations::producePedestalWidthsEffective, edm::es::Label("effective"));
       findingRecord <HcalPedestalWidthsRcd> ();
     }
     if ((objectName == "Gains") || all) {
