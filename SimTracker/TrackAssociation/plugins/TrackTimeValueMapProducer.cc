@@ -39,8 +39,6 @@
 #include "CLHEP/Random/RandGauss.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Utilities/interface/RandomNumberGenerator.h"
-
-#include "FWCore/Utilities/interface/isFinite.h"
 #include "FWCore/Utilities/interface/transform.h"
 
 class TrackTimeValueMapProducer : public edm::global::EDProducer<> {
@@ -157,6 +155,13 @@ void TrackTimeValueMapProducer::produce(edm::StreamID sid, edm::Event& evt, cons
     associatedTracks.emplace_back(associator->associateRecoToSim(TrackCollectionH, TPCollectionH));
   }
   
+  // get event-based seed for RNG
+  unsigned int runNum_uint = static_cast <unsigned int> (evt.id().run());
+  unsigned int lumiNum_uint = static_cast <unsigned int> (evt.id().luminosityBlock());
+  unsigned int evNum_uint = static_cast <unsigned int> (evt.id().event());
+  unsigned int tkChi2_uint = uint32_t(TrackCollection.empty() ? 0 : TrackCollection.refAt(0)->chi2()/0.01);
+  std::uint32_t seed = tkChi2_uint + (lumiNum_uint<<10) + (runNum_uint<<20) + evNum_uint;
+  rng_engine->setSeed(seed,0);
 
   double sumSimTime = 0.;
   double sumSimTimeSq = 0.;
