@@ -546,6 +546,26 @@ def setupBTagging(process, jetSource, pfCandidates, explicitJTA, pvSource, svSou
                 addToProcessAndTask(btagPrefix+btagInfo+labelName+postfix,
                                     btag.softPFElectronsTagInfos.clone(jets = jetSource, primaryVertex=pvSource, electrons=elSource),
                                     process, task)
+
+            if btagInfo == 'pfDeepFlavourTagInfos':
+                # use right input tags when running with RECO PF candidates
+                if pfCandidates == cms.InputTag("particleFlow"):
+                  puppi_value_map = cms.InputTag("puppi")
+                  vertex_associator = cms.InputTag("primaryVertexAssociation","original")
+                else:
+                  puppi_value_map = cms.InputTag("")
+                  vertex_associator = cms.InputTag("")
+                addToProcessAndTask(btagPrefix+btagInfo+labelName+postfix,
+                                    btag.pfDeepFlavourTagInfos.clone(
+                                      jets = jetSource,
+                                      vertices=pvSource,
+                                      secondary_vertices=svSource,
+                                      shallow_tag_infos = cms.InputTag(btagPrefix+'pfDeepCSVTagInfos'+labelName+postfix),
+                                      puppi_value_map = puppi_value_map,
+                                      vertex_associator = vertex_associator,
+                                      ),
+                                    process, task)
+
             acceptedTagInfos.append(btagInfo)
         elif hasattr(toptag, btagInfo) :
             acceptedTagInfos.append(btagInfo)
