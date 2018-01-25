@@ -20,11 +20,13 @@ from HLTrigger.Configuration.common import *
 def customiseFor21810(process):
     for producer in producers_by_type(process, "CaloTowersCreator"):
         producer.HcalPhase = cms.int32(0)
-        producer.HcalCollapsed = cms.bool(True)
         producer.HESThreshold1 = cms.double(0.8)
         producer.HESThreshold  = cms.double(0.8)
         producer.HEDThreshold1 = cms.double(0.8)
         producer.HEDThreshold  = cms.double(0.8)
+    if hasattr(process,'HcalTopologyIdealEP'):
+        # should only be true for "collapsed" cases (2017, 2018)
+        process.HcalTopologyIdealEP.MergePosition = cms.untracked.bool(False)
     return process
 
 def customiseFor21845(process):
