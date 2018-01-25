@@ -499,7 +499,7 @@ void CaloTowersCreationAlgo::rescaleTowers(const CaloTowerCollection& ctc, CaloT
 void CaloTowersCreationAlgo::assignHitHcal(const CaloRecHit * recHit) {
   DetId detId = recHit->detid();
   DetId detIdF(detId);
-  if (detId.det() == DetId::Hcal && theHcalTopology->withSpecialRBXHBHE()) {
+  if (detId.det() == DetId::Hcal && isHcalCollapsed) {
     detIdF = theHcalTopology->idFront(HcalDetId(detId));
 #ifdef EDM_ML_DEBUG
     std::cout << "AssignHitHcal DetId " << HcalDetId(detId) << " Front " 
@@ -1305,8 +1305,6 @@ void CaloTowersCreationAlgo::getThresholdAndWeight(const DetId & detId, double &
 }
 
 bool CaloTowersCreationAlgo::mergedDepth29(HcalDetId id) const {
-  //hack for collapsed case (topology only knows about real depths)
-  if(isHcalCollapsed) return id.depth()==3;
   return theHcalTopology->mergedDepth29(id);
 }
 

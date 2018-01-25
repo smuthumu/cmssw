@@ -147,6 +147,11 @@ calotowermaker = cms.EDProducer("CaloTowersCreator",
     
 )
 
+from Configuration.Eras.Modifier_run2_HEPlan1_2017_cff import run2_HEPlan1_2017
+run2_HEPlan1_2017.toModify(calotowermaker,
+    HcalCollapsed = cms.bool(True)
+)
+
 from Configuration.Eras.Modifier_run2_HE_2018_cff import run2_HE_2018
 run2_HE_2018.toModify(calotowermaker, 
                       HcalPhase = cms.int32(1),
