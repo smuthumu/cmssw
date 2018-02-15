@@ -105,6 +105,7 @@ void QGTagger::produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup&
   }
 
   putInEvent("qgLikelihood", jets, qgProduct,    iEvent);
+  putInEvent("axis1",        jets, axis1Product, iEvent);
   putInEvent("axis2",        jets, axis2Product, iEvent);
   putInEvent("mult",         jets, multProduct,  iEvent);
   putInEvent("ptD",          jets, ptDProduct,   iEvent);
