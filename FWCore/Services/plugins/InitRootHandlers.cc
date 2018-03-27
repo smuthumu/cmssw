@@ -167,7 +167,7 @@ namespace {
     } else if (level >= kSysError) {
       el_severity = SeverityLevel::kSysError;
     } else if (level >= kError) {
-      el_severity = SeverityLevel::kError;
+      el_severity = s_ignoreWarnings ? SeverityLevel::kInfo : SeverityLevel::kError;
     } else if (level >= kWarning) {
       el_severity = s_ignoreWarnings ? SeverityLevel::kInfo : SeverityLevel::kWarning;
     }
