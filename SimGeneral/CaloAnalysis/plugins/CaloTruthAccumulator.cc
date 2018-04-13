@@ -18,6 +18,7 @@
 #include <iterator>
 #include <numeric>  // for std::accumulate
 #include <unordered_map>
+#include <iostream>
 
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/Framework/interface/ESHandle.h"
@@ -660,6 +661,7 @@ void CaloTruthAccumulator::fillSimHits(
         int subdet, layer, cell, sec, subsec, zp;
         HGCalTestNumbering::unpackHexagonIndex(simId, subdet, zp, layer, sec, subsec, cell);
         const HGCalDDDConstants* ddd = hgddd_[subdet - 3];
+        if(sec==669 or sec==796) std::cout << simId << std::endl;
         std::pair<int, int> recoLayerCell =
             ddd->simToReco(cell, layer, sec, hgtopo_[subdet - 3]->detectorType());
         cell = recoLayerCell.first;
@@ -667,6 +669,7 @@ void CaloTruthAccumulator::fillSimHits(
         // skip simhits with bad barcodes or non-existant layers
         if (layer == -1 || simHit.geantTrackId() == 0) continue;
         id = HGCalDetId((ForwardSubdetector)subdet, zp, layer, subsec, sec, cell);
+        if(sec==669 or sec==796) std::cout << HGCalDetId(id) << std::endl;
       }
 
       if (DetId(0) == id) continue;

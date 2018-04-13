@@ -396,6 +396,8 @@ std::pair<int,int> HGCalDDDConstants::simToReco(int cell, int lay, int mod,
       (mode_ == HGCalGeometryMode::HexagonFull)) {
     kx  = cell;
     int type = hgpar_->waferTypeL_[mod];
+    if(mod>=int(hgpar_->waferTypeL_.size())) std::cout << "simToReco: " << mod << " " << hgpar_->waferTypeL_.size() << " " << type << std::endl;
+
     if (type == 1) {
       depth = hgpar_->layerGroup_[i];
     } else if (type == 2) {
