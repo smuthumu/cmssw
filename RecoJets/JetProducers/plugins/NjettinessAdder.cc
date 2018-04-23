@@ -90,11 +90,11 @@ void NjettinessAdder::produce(edm::Event & iEvent, const edm::EventSetup & iSetu
 
       for ( typename edm::View<reco::Jet>::const_iterator jetIt = jets->begin() ; jetIt != jets->end() ; ++jetIt ) {
 
-	edm::Ptr<reco::Jet> jetPtr = jets->ptrAt(jetIt - jets->begin());
+        edm::Ptr<reco::Jet> jetPtr = jets->ptrAt(jetIt - jets->begin());
 
-	float t=getTau( *n, jetPtr );
+        float t=getTau( *n, jetPtr );
 
-	tauN.push_back(t);
+        tauN.push_back(t);
       }
 
       auto outT = std::make_unique<edm::ValueMap<float>>();
@@ -112,10 +112,17 @@ float NjettinessAdder::getTau(unsigned num, const edm::Ptr<reco::Jet> & object) 
   for (unsigned k = 0; k < object->numberOfDaughters(); ++k)
     {
       const reco::CandidatePtr & dp = object->daughterPtr(k);
-      if ( dp.isNonnull() && dp.isAvailable() )
-	FJparticles.push_back( fastjet::PseudoJet( dp->px(), dp->py(), dp->pz(), dp->energy() ) );
+      if ( dp.isNonnull() && dp.isAvailable() ){
+        const reco::Candidate* dau = object->daughter(k);
+        //for AK8 in miniAOD, subjets stored as daughters, need to get constituents from them
+        unsigned numdau = dau->numberOfDaughters();
+        for(unsigned m = 0; m < std::max(numdau,1u); ++m){
+          const reco::Candidate* dau2 = numdau==0 ? dau : dau->daughter(m);
+          FJparticles.push_back( fastjet::PseudoJet( dau2->px(), dau2->py(), dau2->pz(), dau2->energy() ) );
+        }
+      }
       else
-	edm::LogWarning("MissingJetConstituent") << "Jet constituent required for N-subjettiness computation is missing!";
+        edm::LogWarning("MissingJetConstituent") << "Jet constituent required for N-subjettiness computation is missing!";
     }
 
   return routine_->getTau(num, FJparticles); 
