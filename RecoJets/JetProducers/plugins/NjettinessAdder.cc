@@ -13,7 +13,8 @@ NjettinessAdder::NjettinessAdder(const edm::ParameterSet& iConfig) :
   Rcutoff_(iConfig.getParameter<double>("Rcutoff")),
   axesDefinition_(iConfig.getParameter< unsigned >("axesDefinition")),
   nPass_(iConfig.getParameter<int>("nPass")),
-  akAxesR0_(iConfig.getParameter<double>("akAxesR0"))
+  akAxesR0_(iConfig.getParameter<double>("akAxesR0")),
+  storeAxes_(iConfig.getParameter<bool>("storeAxes"))
 {
   for ( std::vector<unsigned>::const_iterator n = Njets_.begin(); n != Njets_.end(); ++n )
     {
@@ -21,6 +22,19 @@ NjettinessAdder::NjettinessAdder(const edm::ParameterSet& iConfig) :
       tauN_str << "tau" << *n;
 
       produces<edm::ValueMap<float> >(tauN_str.str());
+
+      if(storeAxes_){
+        //n axes for tau_n
+        for(unsigned nn = 1; nn <= *n; ++nn){
+          std::ostringstream etaN_str;
+          etaN_str << tauN_str.str() << "etaAxis" << nn;
+          std::ostringstream phiN_str;
+          phiN_str << tauN_str.str() << "phiAxis" << nn;
+
+          produces<edm::ValueMap<float> >(etaN_str.str());
+          produces<edm::ValueMap<float> >(phiN_str.str());
+        }
+      }
     }
 
 
@@ -87,6 +101,16 @@ void NjettinessAdder::produce(edm::Event & iEvent, const edm::EventSetup & iSetu
       // prepare room for output
       std::vector<float> tauN;
       tauN.reserve(jets->size());
+      std::vector<std::vector<float>> etaN, phiN;
+      if(storeAxes_){
+        etaN.resize(*n);
+        phiN.resize(*n);
+        //n axes for tau_n
+        for(unsigned nn = 1; nn <= *n; ++nn){
+          etaN[nn-1].reserve(jets->size());
+          phiN[nn-1].reserve(jets->size());
+        }
+      }
 
       for ( typename edm::View<reco::Jet>::const_iterator jetIt = jets->begin() ; jetIt != jets->end() ; ++jetIt ) {
 
@@ -95,6 +119,14 @@ void NjettinessAdder::produce(edm::Event & iEvent, const edm::EventSetup & iSetu
         float t=getTau( *n, jetPtr );
 
         tauN.push_back(t);
+        if(storeAxes_){
+          auto FJaxes = routine_->currentAxes();
+          //n axes for tau_n
+          for(unsigned nn = 1; nn <= *n; ++nn){
+            etaN[nn-1].push_back(FJaxes[nn-1].eta());
+            phiN[nn-1].push_back(FJaxes[nn-1].phi());
+          }
+        }
       }
 
       auto outT = std::make_unique<edm::ValueMap<float>>();
@@ -103,6 +135,28 @@ void NjettinessAdder::produce(edm::Event & iEvent, const edm::EventSetup & iSetu
       fillerT.fill();
 
       iEvent.put(std::move(outT),tauN_str.str());
+
+      if(storeAxes_){
+        //n axes for tau_n
+        for(unsigned nn = 1; nn <= *n; ++nn){
+          std::ostringstream etaN_str;
+          etaN_str << tauN_str.str() << "etaAxis" << nn;
+          std::ostringstream phiN_str;
+          phiN_str << tauN_str.str() << "phiAxis" << nn;
+
+          auto outTE = std::make_unique<edm::ValueMap<float>>();
+          edm::ValueMap<float>::Filler fillerTE(*outTE);
+          fillerTE.insert(jets, etaN[nn-1].begin(), etaN[nn-1].end());
+          fillerTE.fill();
+          iEvent.put(std::move(outTE),etaN_str.str());
+
+          auto outTP = std::make_unique<edm::ValueMap<float>>();
+          edm::ValueMap<float>::Filler fillerTP(*outTP);
+          fillerTP.insert(jets, phiN[nn-1].begin(), phiN[nn-1].end());
+          fillerTP.fill();
+          iEvent.put(std::move(outTP),phiN_str.str());
+        }
+      }
     }
 }
 

@@ -11,5 +11,6 @@ Njettiness = cms.EDProducer("NjettinessAdder",
                             # variables for axes definition :
                             axesDefinition = cms.uint32( 6 ),    # CMS default is 1-pass KT axes
                             nPass = cms.int32(999),             # not used by default
-                            akAxesR0 = cms.double(999.0)        # not used by default
+                            akAxesR0 = cms.double(999.0),       # not used by default
+                            storeAxes = cms.bool(False),
                             )
