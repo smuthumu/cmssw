@@ -27,7 +27,7 @@ EcalClusterLazyToolsBase::EcalClusterLazyToolsBase( const edm::Event &ev, const 
   ebRHToken_ = token1;
   eeRHToken_ = token2;
  
-  getGeometry( es , false );
+  getGeometry( es );
   getTopology( es );
   getEBRecHits( ev );
   getEERecHits( ev );
@@ -41,27 +41,25 @@ EcalClusterLazyToolsBase::EcalClusterLazyToolsBase( const edm::Event &ev, const 
 {
   esRHToken_ = token3;
   getESRecHits( ev );
+  getGeometryES();
 }
 
 EcalClusterLazyToolsBase::~EcalClusterLazyToolsBase()
 {}
 
-void EcalClusterLazyToolsBase::getGeometry( const edm::EventSetup &es, bool doES ) {
+void EcalClusterLazyToolsBase::getGeometry( const edm::EventSetup &es) {
         edm::ESHandle<CaloGeometry> pGeometry;
         es.get<CaloGeometryRecord>().get(pGeometry);
         geometry_ = pGeometry.product();
+}
 
-        if(doES){
-          const CaloSubdetectorGeometry *geometryES = geometry_->getSubdetectorGeometry(DetId::Ecal, EcalPreshower);
-          if (geometryES) {
-            ecalPS_topology_.reset(new EcalPreshowerTopology(geometry_));
-          } else {
-            ecalPS_topology_.reset();
-            edm::LogInfo("subdetector geometry not available") << "EcalPreshower geometry is missing" << std::endl;
-          }
-        }
-        else {
+void EcalClusterLazyToolsBase::getGeometryES(){
+        const CaloSubdetectorGeometry *geometryES = geometry_->getSubdetectorGeometry(DetId::Ecal, EcalPreshower);
+        if (geometryES) {
+          ecalPS_topology_.reset(new EcalPreshowerTopology(geometry_));
+        } else {
           ecalPS_topology_.reset();
+          edm::LogInfo("subdetector geometry not available") << "EcalPreshower geometry is missing" << std::endl;
         }
 }
 
