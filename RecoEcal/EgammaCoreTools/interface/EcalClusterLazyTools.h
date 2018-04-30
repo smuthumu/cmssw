@@ -81,10 +81,10 @@ class EcalClusterLazyToolsBase {
   std::shared_ptr<CaloSubdetectorTopology const> ecalPS_topology_;
 
   //const EcalIntercalibConstantMap& icalMap;
-  edm::ESHandle<EcalIntercalibConstants> ical;
-  const EcalIntercalibConstantMap*        icalMap;
-  edm::ESHandle<EcalADCToGeVConstant>    agc;
-  edm::ESHandle<EcalLaserDbService>      laser;
+  edm::ESHandle<EcalIntercalibConstants> ical_;
+  const EcalIntercalibConstantMap*        icalMap_;
+  edm::ESHandle<EcalADCToGeVConstant>    agc_;
+  edm::ESHandle<EcalLaserDbService>      laser_;
   void getIntercalibConstants( const edm::EventSetup &es );
   void getADCToGeV           ( const edm::EventSetup &es );
   void getLaserDbService     ( const edm::EventSetup &es );
@@ -96,8 +96,8 @@ class EcalClusterLazyToolsBase {
   inline const EcalRecHitCollection *getEcalEBRecHitCollection(void) const {return ebRecHits_;};
   inline const EcalRecHitCollection *getEcalEERecHitCollection(void) const {return eeRecHits_;};
   inline const EcalRecHitCollection *getEcalESRecHitCollection(void) const {return esRecHits_;};
-  inline const EcalIntercalibConstants& getEcalIntercalibConstants(void) const {return *icalMap;};
-  inline const edm::ESHandle<EcalLaserDbService>& getLaserHandle(void) const {return laser;};
+  inline const EcalIntercalibConstants& getEcalIntercalibConstants(void) const {return *icalMap_;};
+  inline const edm::ESHandle<EcalLaserDbService>& getLaserHandle(void) const {return laser_;};
   
 }; // class EcalClusterLazyToolsBase
 

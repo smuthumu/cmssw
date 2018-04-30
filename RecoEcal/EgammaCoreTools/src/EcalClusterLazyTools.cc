@@ -118,8 +118,8 @@ void EcalClusterLazyToolsBase::getESRecHits( const edm::Event &ev ) {
 void EcalClusterLazyToolsBase::getIntercalibConstants( const edm::EventSetup &es )
 {
   // get IC's
-  es.get<EcalIntercalibConstantsRcd>().get(ical);
-  icalMap = &ical->getMap();
+  es.get<EcalIntercalibConstantsRcd>().get(ical_);
+  icalMap_ = &ical_->getMap();
 }
 
 
@@ -127,14 +127,14 @@ void EcalClusterLazyToolsBase::getIntercalibConstants( const edm::EventSetup &es
 void EcalClusterLazyToolsBase::getADCToGeV( const edm::EventSetup &es )
 {
   // get ADCtoGeV
-  es.get<EcalADCToGeVConstantRcd>().get(agc);
+  es.get<EcalADCToGeVConstantRcd>().get(agc_);
 }
 
 
 
 void EcalClusterLazyToolsBase::getLaserDbService     ( const edm::EventSetup &es ){
   // transp corrections
-  es.get<EcalLaserDbRecord>().get(laser);
+  es.get<EcalLaserDbRecord>().get(laser_);
 }
 
 
@@ -195,11 +195,11 @@ float EcalClusterLazyToolsBase::BasicClusterTime(const reco::BasicCluster &clust
       // in order to get back the ADC counts from the recHit energy, three ingredients are necessary:
       // 1) get laser correction coefficient
       float lasercalib = 1.;
-      lasercalib = laser->getLaserCorrection( detitr->first, ev.time());
+      lasercalib = laser_->getLaserCorrection( detitr->first, ev.time());
       // 2) get intercalibration
-      EcalIntercalibConstantMap::const_iterator icalit = icalMap->find(detitr->first);
+      EcalIntercalibConstantMap::const_iterator icalit = icalMap_->find(detitr->first);
       EcalIntercalibConstant icalconst = 1.;
-      if( icalit!=icalMap->end() ) {
+      if( icalit!=icalMap_->end() ) {
 	icalconst = (*icalit);
 	// std::cout << "icalconst set to: " << icalconst << std::endl;
       } else {
@@ -208,8 +208,8 @@ float EcalClusterLazyToolsBase::BasicClusterTime(const reco::BasicCluster &clust
       }
       // 3) get adc2GeV
       float adcToGeV = 1.;
-      if       ( (detitr -> first).subdetId() == EcalBarrel )  adcToGeV = float(agc->getEBValue());
-      else if  ( (detitr -> first).subdetId() == EcalEndcap )  adcToGeV = float(agc->getEEValue());
+      if       ( (detitr -> first).subdetId() == EcalBarrel )  adcToGeV = float(agc_->getEBValue());
+      else if  ( (detitr -> first).subdetId() == EcalEndcap )  adcToGeV = float(agc_->getEEValue());
             float adc = 2.;
       if (icalconst>0 && lasercalib>0 && adcToGeV>0)  adc= (*oneHit).energy()/(icalconst*lasercalib*adcToGeV);
 
