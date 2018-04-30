@@ -35,6 +35,12 @@ class EcalClusterLazyToolsBase {
  public:
   EcalClusterLazyToolsBase( const edm::Event &ev, const edm::EventSetup &es, edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2);
   EcalClusterLazyToolsBase( const edm::Event &ev, const edm::EventSetup &es, edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2, edm::EDGetTokenT<EcalRecHitCollection> token3);
+  EcalClusterLazyToolsBase( const edm::Event &ev, 
+    const CaloGeometry *geometry, const CaloTopology *topology, edm::ESHandle<EcalIntercalibConstants> ical, edm::ESHandle<EcalADCToGeVConstant> agc, edm::ESHandle<EcalLaserDbService> laser,
+    edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2);
+  EcalClusterLazyToolsBase( const edm::Event &ev, 
+    const CaloGeometry *geometry, const CaloTopology *topology, edm::ESHandle<EcalIntercalibConstants> ical, edm::ESHandle<EcalADCToGeVConstant> agc, edm::ESHandle<EcalLaserDbService> laser,
+    edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2,  edm::EDGetTokenT<EcalRecHitCollection> token3);
   ~EcalClusterLazyToolsBase();
   
 
@@ -111,6 +117,17 @@ class EcalClusterLazyToolsT : public EcalClusterLazyToolsBase {
 
  EcalClusterLazyToolsT( const edm::Event &ev, const edm::EventSetup &es, edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2, edm::EDGetTokenT<EcalRecHitCollection> token3):
   EcalClusterLazyToolsBase(ev,es,token1,token2,token3) {}
+
+  EcalClusterLazyToolsT( const edm::Event &ev, 
+    const CaloGeometry *geometry, const CaloTopology *topology, edm::ESHandle<EcalIntercalibConstants> ical, edm::ESHandle<EcalADCToGeVConstant> agc, edm::ESHandle<EcalLaserDbService> laser,
+    edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2) :
+      EcalClusterLazyToolsBase( ev, geometry, topology, ical, agc, laser, token1, token2) {}
+
+  EcalClusterLazyToolsT( const edm::Event &ev, 
+    const CaloGeometry *geometry, const CaloTopology *topology, edm::ESHandle<EcalIntercalibConstants> ical, edm::ESHandle<EcalADCToGeVConstant> agc, edm::ESHandle<EcalLaserDbService> laser,
+    edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2,  edm::EDGetTokenT<EcalRecHitCollection> token3) :
+    EcalClusterLazyToolsBase( ev, geometry, topology, ical, agc, laser, token1, token2, token3) {}
+
         ~EcalClusterLazyToolsT() {}
 
         // various energies in the matrix nxn surrounding the maximum energy crystal of the input cluster  

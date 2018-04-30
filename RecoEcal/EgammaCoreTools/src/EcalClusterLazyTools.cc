@@ -44,6 +44,33 @@ EcalClusterLazyToolsBase::EcalClusterLazyToolsBase( const edm::Event &ev, const 
   getGeometryES();
 }
 
+EcalClusterLazyToolsBase::EcalClusterLazyToolsBase( const edm::Event &ev,
+  const CaloGeometry *geometry, const CaloTopology *topology, edm::ESHandle<EcalIntercalibConstants> ical, edm::ESHandle<EcalADCToGeVConstant> agc, edm::ESHandle<EcalLaserDbService> laser,
+  edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2) :
+  geometry_(geometry),
+  topology_(topology),
+  ebRHToken_(token1),
+  eeRHToken_(token2),
+  ical_(ical),
+  agc_(agc),
+  laser_(laser)
+{
+  icalMap_ = &ical_->getMap();
+  getEBRecHits( ev );
+  getEERecHits( ev );
+}
+
+EcalClusterLazyToolsBase::EcalClusterLazyToolsBase( const edm::Event &ev,
+    const CaloGeometry *geometry, const CaloTopology *topology, edm::ESHandle<EcalIntercalibConstants> ical, edm::ESHandle<EcalADCToGeVConstant> agc, edm::ESHandle<EcalLaserDbService> laser,
+    edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2,  edm::EDGetTokenT<EcalRecHitCollection> token3) :
+  EcalClusterLazyToolsBase::EcalClusterLazyToolsBase(ev,geometry,topology,ical,agc,laser,token1,token2)
+{
+  esRHToken_ = token3;
+  getESRecHits( ev );
+  getGeometryES();
+}
+
+
 EcalClusterLazyToolsBase::~EcalClusterLazyToolsBase()
 {}
 
