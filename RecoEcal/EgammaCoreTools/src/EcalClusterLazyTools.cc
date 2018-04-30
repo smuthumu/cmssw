@@ -19,8 +19,6 @@
 #include "CalibCalorimetry/EcalLaserCorrection/interface/EcalLaserDbRecord.h"
 
 #include "CommonTools/Utils/interface/StringToEnumValue.h"
-#include "RecoLocalCalo/EcalRecAlgos/interface/EcalSeverityLevelAlgoRcd.h"
-#include "RecoLocalCalo/EcalRecAlgos/interface/EcalSeverityLevelAlgo.h"
 
 EcalClusterLazyToolsBase::EcalClusterLazyToolsBase( const edm::Event &ev, const edm::EventSetup &es, edm::EDGetTokenT<EcalRecHitCollection> token1, edm::EDGetTokenT<EcalRecHitCollection> token2) {
 
@@ -189,10 +187,6 @@ float EcalClusterLazyToolsBase::BasicClusterSeedTime(const reco::BasicCluster &c
   
   DetId id = cluster.seed();
   EcalRecHitCollection::const_iterator theSeedHit = recHits->find (id);
-  //  std::cout << "the seed of the BC has time: " 
-  //<< (*theSeedHit).time() 
-  //<< "and energy: " << (*theSeedHit).energy() << " collection size: " << recHits->size() 
-  //<< "\n" <<std::endl; // GF debug
   
   return (*theSeedHit).time();
 }
@@ -214,7 +208,6 @@ float EcalClusterLazyToolsBase::BasicClusterTime(const reco::BasicCluster &clust
   
   for (std::vector<std::pair<DetId, float> >::const_iterator detitr = clusterComponents.begin(); detitr != clusterComponents.end(); detitr++ )
     {
-      //      EcalRecHitCollection::const_iterator theSeedHit = recHits->find (id); // trash this
       EcalRecHitCollection::const_iterator oneHit = recHits->find( (detitr -> first) ) ;
       
       // in order to get back the ADC counts from the recHit energy, three ingredients are necessary:
@@ -226,7 +219,6 @@ float EcalClusterLazyToolsBase::BasicClusterTime(const reco::BasicCluster &clust
       EcalIntercalibConstant icalconst = 1.;
       if( icalit!=icalMap_->end() ) {
 	icalconst = (*icalit);
-	// std::cout << "icalconst set to: " << icalconst << std::endl;
       } else {
 	edm::LogError("EcalClusterLazyTools") << "No intercalib const found for xtal "  << (detitr->first).rawId() << "bailing out";
 	assert(0);
@@ -358,7 +350,6 @@ std::vector<float> EcalClusterLazyToolsBase::getESHits(double X, double Y, doubl
     it = rechits_map.find(strip);
     if (it != rechits_map.end() && it->second.energy() > 1.0e-10) esHits.push_back(it->second.energy());
     else esHits.push_back(0);
-    //cout<<"center : "<<strip<<" "<<it->second.energy()<<endl;
 
     // Front Plane
     if (plane==1) {
@@ -369,11 +360,9 @@ std::vector<float> EcalClusterLazyToolsBase::getESHits(double X, double Y, doubl
           it = rechits_map.find(next);
           if (it != rechits_map.end() && it->second.energy() > 1.0e-10) esHits.push_back(it->second.energy());
           else esHits.push_back(0);
-          //cout<<"east "<<i<<" : "<<next<<" "<<it->second.energy()<<endl;
         } else {
           for (int j=i; j<15; j++) esHits.push_back(0);
           break;
-          //cout<<"east "<<i<<" : "<<next<<" "<<0<<endl;
         }
       }
 
@@ -386,11 +375,9 @@ std::vector<float> EcalClusterLazyToolsBase::getESHits(double X, double Y, doubl
           it = rechits_map.find(next);
           if (it != rechits_map.end() && it->second.energy() > 1.0e-10) esHits.push_back(it->second.energy());
           else esHits.push_back(0);
-          //cout<<"west "<<i<<" : "<<next<<" "<<it->second.energy()<<endl;
         } else {
           for (int j=i; j<15; j++) esHits.push_back(0);
           break;
-          //cout<<"west "<<i<<" : "<<next<<" "<<0<<endl;
         }
       }
     } // End of Front Plane
@@ -404,11 +391,9 @@ std::vector<float> EcalClusterLazyToolsBase::getESHits(double X, double Y, doubl
           it = rechits_map.find(next);
           if (it != rechits_map.end() && it->second.energy() > 1.0e-10) esHits.push_back(it->second.energy());
           else esHits.push_back(0);
-          //cout<<"north "<<i<<" : "<<next<<" "<<it->second.energy()<<endl;
         } else {
           for (int j=i; j<15; j++) esHits.push_back(0);
           break;
-          //cout<<"north "<<i<<" : "<<next<<" "<<0<<endl;
         }
       }
 
@@ -421,11 +406,9 @@ std::vector<float> EcalClusterLazyToolsBase::getESHits(double X, double Y, doubl
           it = rechits_map.find(next);
           if (it != rechits_map.end() && it->second.energy() > 1.0e-10) esHits.push_back(it->second.energy());
           else esHits.push_back(0);
-          //cout<<"south "<<i<<" : "<<next<<" "<<it->second.energy()<<endl;
         } else {
           for (int j=i; j<15; j++) esHits.push_back(0);
           break;
-          //cout<<"south "<<i<<" : "<<next<<" "<<0<<endl;
         }
       }
     } // End of Rear Plane

@@ -22,8 +22,6 @@
 #include "CondFormats/EcalObjects/interface/EcalADCToGeVConstant.h"
 #include "CalibCalorimetry/EcalLaserCorrection/interface/EcalLaserDbService.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "RecoLocalCalo/EcalRecAlgos/interface/EcalSeverityLevelAlgoRcd.h"
-#include "RecoLocalCalo/EcalRecAlgos/interface/EcalSeverityLevelAlgo.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterTools.h"
 
 
@@ -64,10 +62,6 @@ class EcalClusterLazyToolsBase {
   float eseffsixix( const reco::SuperCluster &cluster ) const;
   float eseffsiyiy( const reco::SuperCluster &cluster ) const;
   
-  //  std::vector<int> flagsexcl_;
-  //std::vector<int> severitiesexcl_;
-  // const EcalSeverityLevelAlgo *sevLv;
-  
  protected:
   void getGeometry( const edm::EventSetup &es );
   void getGeometryES();
@@ -87,7 +81,6 @@ class EcalClusterLazyToolsBase {
 
   std::shared_ptr<CaloSubdetectorTopology const> ecalPS_topology_;
 
-  //const EcalIntercalibConstantMap& icalMap;
   edm::ESHandle<EcalIntercalibConstants> ical_;
   const EcalIntercalibConstantMap*        icalMap_;
   edm::ESHandle<EcalADCToGeVConstant>    agc_;
@@ -96,9 +89,6 @@ class EcalClusterLazyToolsBase {
   void getADCToGeV           ( const edm::EventSetup &es );
   void getLaserDbService     ( const edm::EventSetup &es );
   
-  //  std::vector<int> flagsexcl_;
-  //  std::vector<int> severitiesexcl_;
-
  public:
   inline const EcalRecHitCollection *getEcalEBRecHitCollection(void) const {return ebRecHits_;};
   inline const EcalRecHitCollection *getEcalEERecHitCollection(void) const {return eeRecHits_;};
