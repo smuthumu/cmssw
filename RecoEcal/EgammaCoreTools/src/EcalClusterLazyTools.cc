@@ -147,7 +147,7 @@ void EcalClusterLazyToolsBase::getLaserDbService     ( const edm::EventSetup &es
 }
 
 
-const EcalRecHitCollection * EcalClusterLazyToolsBase::getEcalRecHitCollection( const reco::BasicCluster &cluster )
+const EcalRecHitCollection * EcalClusterLazyToolsBase::getEcalRecHitCollection( const reco::BasicCluster &cluster ) const
 {
         if ( cluster.size() == 0 ) {
                 throw cms::Exception("InvalidCluster") << "The cluster has no crystals!";
@@ -166,7 +166,7 @@ const EcalRecHitCollection * EcalClusterLazyToolsBase::getEcalRecHitCollection( 
 
 
 // get time of basic cluster seed crystal 
-float EcalClusterLazyToolsBase::BasicClusterSeedTime(const reco::BasicCluster &cluster)
+float EcalClusterLazyToolsBase::BasicClusterSeedTime(const reco::BasicCluster &cluster) const
 {
   
   const EcalRecHitCollection *recHits = getEcalRecHitCollection( cluster );
@@ -183,7 +183,7 @@ float EcalClusterLazyToolsBase::BasicClusterSeedTime(const reco::BasicCluster &c
 
 
 // error-weighted average of time from constituents of basic cluster 
-float EcalClusterLazyToolsBase::BasicClusterTime(const reco::BasicCluster &cluster, const edm::Event &ev)
+float EcalClusterLazyToolsBase::BasicClusterTime(const reco::BasicCluster &cluster, const edm::Event &ev) const
 {
   
   std::vector<std::pair<DetId, float> > clusterComponents = (cluster).hitsAndFractions() ;
@@ -249,7 +249,7 @@ float EcalClusterLazyToolsBase::BasicClusterTime(const reco::BasicCluster &clust
 
 
 // get BasicClusterSeedTime of the seed basic cluser of the supercluster
-float EcalClusterLazyToolsBase::SuperClusterSeedTime(const reco::SuperCluster &cluster){
+float EcalClusterLazyToolsBase::SuperClusterSeedTime(const reco::SuperCluster &cluster) const {
 
   return BasicClusterSeedTime ( (*cluster.seed()) );
 
@@ -257,7 +257,7 @@ float EcalClusterLazyToolsBase::SuperClusterSeedTime(const reco::SuperCluster &c
 
 
 // get BasicClusterTime of the seed basic cluser of the supercluster
-float EcalClusterLazyToolsBase::SuperClusterTime(const reco::SuperCluster &cluster, const edm::Event &ev){
+float EcalClusterLazyToolsBase::SuperClusterTime(const reco::SuperCluster &cluster, const edm::Event &ev) const {
   
   return BasicClusterTime ( (*cluster.seed()) , ev);
 
@@ -265,7 +265,7 @@ float EcalClusterLazyToolsBase::SuperClusterTime(const reco::SuperCluster &clust
 
 
 // get Preshower effective sigmaIRIR
-float EcalClusterLazyToolsBase::eseffsirir(const reco::SuperCluster &cluster)
+float EcalClusterLazyToolsBase::eseffsirir(const reco::SuperCluster &cluster) const
 {
   if (!(fabs(cluster.eta()) > 1.6 && fabs(cluster.eta()) < 3.)) return 0.;
 
@@ -280,7 +280,7 @@ float EcalClusterLazyToolsBase::eseffsirir(const reco::SuperCluster &cluster)
 }
 
 // get Preshower effective sigmaIXIX
-float EcalClusterLazyToolsBase::eseffsixix(const reco::SuperCluster &cluster)
+float EcalClusterLazyToolsBase::eseffsixix(const reco::SuperCluster &cluster) const
 {
   if (!(fabs(cluster.eta()) > 1.6 && fabs(cluster.eta()) < 3.)) return 0.;
 
@@ -293,7 +293,7 @@ float EcalClusterLazyToolsBase::eseffsixix(const reco::SuperCluster &cluster)
 }
 
 // get Preshower effective sigmaIYIY
-float EcalClusterLazyToolsBase::eseffsiyiy(const reco::SuperCluster &cluster)
+float EcalClusterLazyToolsBase::eseffsiyiy(const reco::SuperCluster &cluster) const
 {
   if (!(fabs(cluster.eta()) > 1.6 && fabs(cluster.eta()) < 3.)) return 0.;
 
@@ -306,7 +306,7 @@ float EcalClusterLazyToolsBase::eseffsiyiy(const reco::SuperCluster &cluster)
 }
 
 // get Preshower Rechits
-std::vector<float> EcalClusterLazyToolsBase::getESHits(double X, double Y, double Z, const std::map<DetId, EcalRecHit>& _rechits_map, const CaloGeometry* geometry, CaloSubdetectorTopology const *topology_p, int row, int plane) 
+std::vector<float> EcalClusterLazyToolsBase::getESHits(double X, double Y, double Z, const std::map<DetId, EcalRecHit>& _rechits_map, const CaloGeometry* geometry, CaloSubdetectorTopology const *topology_p, int row, int plane) const
 {
   std::map<DetId, EcalRecHit> rechits_map = _rechits_map;
   std::vector<float> esHits;
@@ -420,7 +420,7 @@ std::vector<float> EcalClusterLazyToolsBase::getESHits(double X, double Y, doubl
 
 
 // get Preshower hit shape
-float EcalClusterLazyToolsBase::getESShape(const std::vector<float>& ESHits0)
+float EcalClusterLazyToolsBase::getESShape(const std::vector<float>& ESHits0) const
 {
   const int nBIN = 21;
   float esRH[nBIN];
