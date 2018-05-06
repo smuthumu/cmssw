@@ -27,6 +27,7 @@
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/Common/interface/ValueMap.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
 
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
 
@@ -180,6 +181,9 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
             descriptions.addDefault(desc);
         }
 
+        // only implemented for pat::Jet specialization
+        void setOrigIndex(T& jet, int idx) {}
+
         virtual void produce(edm::Event& event, const edm::EventSetup& setup) override {
 
             edm::Handle<JetCollection> jets_collection;
@@ -225,11 +229,15 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
             auto smearedJets = std::make_unique<JetCollection>();
             auto jerUncVec  = std::make_unique<std::vector<double>>();
 
+            int idx = 0;
             for (const auto& jet: jets) {
+                T smearedJet = jet;
+                setOrigIndex(smearedJet, idx);
+                ++idx;
 
                 if ((! m_enabled) || (jet.pt() == 0)) {
                     // Module disabled or invalid p4. Simply copy the input jet.
-                    smearedJets->push_back(jet);
+                    smearedJets->push_back(smearedJet);
 
                     continue;
                 }
@@ -293,7 +301,6 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
                     continue;
                 }
 
-                T smearedJet = jet;
                 smearedJet.scaleEnergy(smearFactor);
 
                 if (m_debug) {
@@ -343,4 +350,12 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
 
 	int m_nomVar;
 };
+
+// only implemented for pat::Jet specialization
+template <>
+void SmearedJetProducerT<pat::Jet>::setOrigIndex(pat::Jet& jet, int idx) {
+    jet.addUserInt("origIndex",idx);
+}
+
+
 #endif
