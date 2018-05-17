@@ -65,6 +65,7 @@ class NjettinessAdder : public edm::stream::EDProducer<> {
     unsigned                               axesDefinition_;
     int                                    nPass_;
     double                                 akAxesR0_;
+    bool                                   storeAxes_;
 
 
 
