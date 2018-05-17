@@ -26,6 +26,8 @@
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
 #include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/Common/interface/ValueMap.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
 
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
 
@@ -103,6 +105,7 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
     public:
         explicit SmearedJetProducerT(const edm::ParameterSet& cfg):
             m_enabled(cfg.getParameter<bool>("enabled")),
+            m_store_factor(cfg.getParameter<bool>("store_factor")),
             m_useDeterministicSeed(cfg.getParameter<bool>("useDeterministicSeed")),
             m_debug(cfg.getUntrackedParameter<bool>("debug", false)) {
 
@@ -151,7 +154,8 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
                     throw edm::Exception(edm::errors::ConfigFileReadError, "Invalid value for 'variation' parameter. Only -1, 0, 1 or 101, -101 are supported.");
             }
 
-            produces<JetCollection>();
+            if(m_store_factor) produces<edm::ValueMap<float>>();
+            else produces<JetCollection>();
         }
 
         static void fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
@@ -159,6 +163,7 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
 
             desc.add<edm::InputTag>("src");
             desc.add<bool>("enabled");
+            desc.add<bool>("store_factor",false);
             desc.add<edm::InputTag>("rho");
             desc.add<std::int32_t>("variation", 0);
             desc.add<std::uint32_t>("seed", 37428479);
@@ -175,6 +180,9 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
 
             descriptions.addDefault(desc);
         }
+
+        // only implemented for pat::Jet specialization
+        void setOrigIndex(T& jet, int idx) {}
 
         virtual void produce(edm::Event& event, const edm::EventSetup& setup) override {
 
@@ -219,12 +227,17 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
                 m_genJetMatcher->getTokens(event);
 
             auto smearedJets = std::make_unique<JetCollection>();
+            auto jerUncVec  = std::make_unique<std::vector<double>>();
 
+            int idx = 0;
             for (const auto& jet: jets) {
+                T smearedJet = jet;
+                setOrigIndex(smearedJet, idx);
+                ++idx;
 
                 if ((! m_enabled) || (jet.pt() == 0)) {
                     // Module disabled or invalid p4. Simply copy the input jet.
-                    smearedJets->push_back(jet);
+                    smearedJets->push_back(smearedJet);
 
                     continue;
                 }
@@ -283,7 +296,11 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
                     smearFactor = newSmearFactor;
                 }
 
-                T smearedJet = jet;
+                if(m_store_factor){
+                    jerUncVec->push_back(smearFactor);
+                    continue;
+                }
+
                 smearedJet.scaleEnergy(smearFactor);
 
                 if (m_debug) {
@@ -293,10 +310,20 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
                 smearedJets->push_back(smearedJet);
             }
 
-            // Sort jets by pt
-            std::sort(smearedJets->begin(), smearedJets->end(), jetPtComparator);
+            if(m_store_factor){
+                //store uncertainty as a userfloat
+                auto out = std::make_unique<edm::ValueMap<float>>();
+                typename edm::ValueMap<float>::Filler filler(*out);
+                filler.insert(jets_collection, jerUncVec->begin(), jerUncVec->end());
+                filler.fill();
+                event.put(std::move(out),"");
+            }
+            else {
+                // Sort jets by pt
+                std::sort(smearedJets->begin(), smearedJets->end(), jetPtComparator);
 
-            event.put(std::move(smearedJets));
+                event.put(std::move(smearedJets));
+            }
         }
 
     private:
@@ -305,6 +332,7 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
         edm::EDGetTokenT<JetCollection> m_jets_token;
         edm::EDGetTokenT<double> m_rho_token;
         bool m_enabled;
+        bool m_store_factor;
         std::string m_jets_algo_pt;
         std::string m_jets_algo;
         Variation m_systematic_variation;
@@ -322,4 +350,12 @@ class SmearedJetProducerT : public edm::stream::EDProducer<> {
 
 	int m_nomVar;
 };
+
+// only implemented for pat::Jet specialization
+template <>
+void SmearedJetProducerT<pat::Jet>::setOrigIndex(pat::Jet& jet, int idx) {
+    jet.addUserInt("origIndex",idx);
+}
+
+
 #endif
