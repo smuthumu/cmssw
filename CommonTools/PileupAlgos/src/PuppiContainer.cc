@@ -1,7 +1,5 @@
 #include "CommonTools/PileupAlgos/interface/PuppiContainer.h"
 #include "DataFormats/Math/interface/deltaR.h"
-#include "fastjet/internal/base.hh"
-#include "fastjet/FunctionOfPseudoJet.hh"
 #include "Math/ProbFunc.h"
 #include "TMath.h"
 #include <iostream>
@@ -10,7 +8,6 @@
 #include "FWCore/Utilities/interface/isFinite.h"
 
 using namespace std;
-using namespace fastjet;
 
 PuppiContainer::PuppiContainer(const edm::ParameterSet &iConfig) {
     fPuppiDiagnostics = iConfig.getParameter<bool>("puppiDiagnostics");
@@ -45,7 +42,7 @@ void PuppiContainer::initialize(const std::vector<RecoObj> &iRecoObjects) {
     fRecoParticles = iRecoObjects;
     unsigned nChargedPV = 0;
     for (unsigned int i = 0; i < fRecoParticles.size(); i++){
-        PseudoJet curPseudoJet;
+        PuppiCandidate curPseudoJet;
         auto fRecoParticle = fRecoParticles[i];
         // float nom = sqrt((fRecoParticle.m)*(fRecoParticle.m) + (fRecoParticle.pt)*(fRecoParticle.pt)*(cosh(fRecoParticle.eta))*(cosh(fRecoParticle.eta))) + (fRecoParticle.pt)*sinh(fRecoParticle.eta);//hacked
         // float denom = sqrt((fRecoParticle.m)*(fRecoParticle.m) + (fRecoParticle.pt)*(fRecoParticle.pt));//hacked
@@ -61,7 +58,7 @@ void PuppiContainer::initialize(const std::vector<RecoObj> &iRecoObjects) {
         if(fRecoParticle.id == 1 and fRecoParticle.charge != 0) puppi_register = fRecoParticle.charge; // from PV use the
         if(fRecoParticle.id == 2 and fRecoParticle.charge != 0) puppi_register = fRecoParticle.charge+5; // from NPV use the charge as key +5 as key
         //keep track of charged particles associated to PV
-        curPseudoJet.set_user_info( new PuppiUserInfo( puppi_register, std::abs(fRecoParticle.id) == 1 ) );
+        curPseudoJet.set_info( puppi_register, std::abs(fRecoParticle.id) == 1 );
         if(std::abs(fRecoParticle.id) == 1) ++nChargedPV;
         // fill vector of pseudojets for internal references
         fPFParticles.push_back(curPseudoJet);
@@ -84,11 +81,11 @@ void PuppiContainer::initialize(const std::vector<RecoObj> &iRecoObjects) {
 }
 PuppiContainer::~PuppiContainer(){}
 
-double PuppiContainer::goodVar(unsigned index, std::vector<PseudoJet> const &iParts, int iOpt, const double iRCone, bool useCharged) {
+double PuppiContainer::goodVar(unsigned index, std::vector<PuppiCandidate> const &iParts, int iOpt, const double iRCone, bool useCharged) {
     return var_within_R(iOpt,iParts,index,iRCone,useCharged);
 }
 
-double PuppiContainer::var_within_R(int iId, const vector<PseudoJet> & particles, unsigned centre_index, const double R, bool useCharged){
+double PuppiContainer::var_within_R(int iId, const vector<PuppiCandidate> & particles, unsigned centre_index, const double R, bool useCharged){
     if(iId == -1) return 1;
 
     //this is a circle in rapidity-phi
@@ -102,7 +99,7 @@ double PuppiContainer::var_within_R(int iId, const vector<PseudoJet> & particles
     vector<double > near_pts;      near_pts.reserve(std::min(50UL, particles.size()));
     const double R2 = R*R;
     for (unsigned k = 0; k < fPFParticles.size(); ++k){
-      if(useCharged and !(static_cast<PuppiContainer::PuppiUserInfo const *>(fPFParticles[k].user_info_ptr())->charged())) continue;
+      if(useCharged and !(fPFParticles[k].charged())) continue;
       unsigned i = std::max(k,centre_index);
       unsigned j = std::min(k,centre_index);
       if ( fDistances[i*(i-1)/2+j] < R2 ){
@@ -132,7 +129,7 @@ double PuppiContainer::var_within_R(int iId, const vector<PseudoJet> & particles
     return var;
 }
 //In fact takes the median not the average
-void PuppiContainer::getRMSAvg(int iOpt,std::vector<PseudoJet> const &iParticles) {
+void PuppiContainer::getRMSAvg(int iOpt,std::vector<PuppiCandidate> const &iParticles) {
     for(unsigned int i0 = 0; i0 < iParticles.size(); i0++ ) {
         double pVal = -1;
         //Calculate the Puppi Algo to use
@@ -169,7 +166,7 @@ void PuppiContainer::getRMSAvg(int iOpt,std::vector<PseudoJet> const &iParticles
     for(int i0 = 0; i0 < fNAlgos; i0++) fPuppiAlgo[i0].computeMedRMS(iOpt,fPVFrac);
 }
 //In fact takes the median not the average
-void PuppiContainer::getRawAlphas(int iOpt,std::vector<PseudoJet> const &iParticles) {
+void PuppiContainer::getRawAlphas(int iOpt,std::vector<PuppiCandidate> const &iParticles) {
     for(int j0 = 0; j0 < fNAlgos; j0++){
         for(unsigned int i0 = 0; i0 < iParticles.size(); i0++ ) {
             double pVal = -1;
@@ -283,7 +280,7 @@ std::vector<double> const & PuppiContainer::puppiWeights() {
         // if(std::abs(pWeight) <= 0. ) continue; 
         
         //Produce
-        PseudoJet curjet( pWeight*fPFParticles[i0].px(), pWeight*fPFParticles[i0].py(), pWeight*fPFParticles[i0].pz(), pWeight*fPFParticles[i0].e() );
+        PuppiCandidate curjet( pWeight*fPFParticles[i0].px(), pWeight*fPFParticles[i0].py(), pWeight*fPFParticles[i0].pz(), pWeight*fPFParticles[i0].e() );
         curjet.set_user_index(i0);
         fPupParticles.push_back(curjet);
     }
