@@ -21,15 +21,20 @@ public:
   // make that a register. 
   class PuppiUserInfo : public fastjet::PseudoJet::UserInfoBase {
    public : 
-     PuppiUserInfo( int puppi_register = -1) : puppi_register_(puppi_register) {}
+     PuppiUserInfo( int puppi_register = -1, bool charged = false) : puppi_register_(puppi_register), charged_(charged) {}
      ~PuppiUserInfo() override{}
   
      void set_puppi_register(int i) { puppi_register_ = i; }
   
      inline int puppi_register() const { return puppi_register_; }
+
+     void set_charged(bool c) { charged_ = c; }
+  
+     inline bool charged() const { return charged_; }
   
    protected : 
      int puppi_register_;     /// Used by puppi algorithm to decide neutrals vs PV vs PU
+     bool charged_;
   };
 
 
@@ -51,7 +56,6 @@ public:
     void setNPV(int iNPV){ fNPV = iNPV; }
 
     std::vector<PseudoJet> const & pfParticles() const { return fPFParticles; }
-    std::vector<PseudoJet> const & pvParticles() const { return fChargedPV; }
     std::vector<double> const & puppiWeights();
     const std::vector<double> & puppiRawAlphas(){ return fRawAlphas; }
     const std::vector<double> & puppiAlphas(){ return fVals; }
@@ -63,18 +67,18 @@ public:
     std::vector<PseudoJet> const & puppiParticles() const { return fPupParticles;}
 
 protected:
-    double  goodVar      (PseudoJet const &iPart,std::vector<PseudoJet> const &iParts, int iOpt,const double iRCone);
-    void    getRMSAvg    (int iOpt,std::vector<PseudoJet> const &iConstits,std::vector<PseudoJet> const &iParticles,std::vector<PseudoJet> const &iChargeParticles);
-    void    getRawAlphas    (int iOpt,std::vector<PseudoJet> const &iConstits,std::vector<PseudoJet> const &iParticles,std::vector<PseudoJet> const &iChargeParticles);
+    double  goodVar      (unsigned index, std::vector<PseudoJet> const &iParts, int iOpt, const double iRCone, bool useCharged=false);
+    void    getRMSAvg    (int iOpt,std::vector<PseudoJet> const &iParticles);
+    void    getRawAlphas    (int iOpt,std::vector<PseudoJet> const &iParticles);
     double  getChi2FromdZ(double iDZ);
     int     getPuppiId   ( float iPt, float iEta);
-    double  var_within_R (int iId, const std::vector<PseudoJet> & particles, const PseudoJet& centre, const double R);
+    double  var_within_R (int iId, const std::vector<PseudoJet> & particles, unsigned centre_index, const double R, bool useCharged=false);
     
     bool      fPuppiDiagnostics;
     std::vector<RecoObj>   fRecoParticles;
     std::vector<PseudoJet> fPFParticles;
-    std::vector<PseudoJet> fChargedPV;
     std::vector<PseudoJet> fPupParticles;
+    std::vector<double>    fDistances;
     std::vector<double>    fWeights;
     std::vector<double>    fVals;
     std::vector<double>    fRawAlphas;
