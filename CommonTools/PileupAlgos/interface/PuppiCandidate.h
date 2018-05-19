@@ -13,13 +13,13 @@ class PuppiCandidate : public fastjet::PseudoJet {
     double pseudorapidity() const { _ensure_valid_eta(); return _eta; }
     double eta() const { return pseudorapidity(); }
     void _ensure_valid_eta() const { if(_eta==pseudojet_invalid_eta) _eta = fastjet::PseudoJet::pseudorapidity(); }
-    void set_info(int puppi_register, bool charged) { puppi_register = puppi_register_; charged_ = charged; }
+    void set_info(int puppi_register, unsigned vector_index) { puppi_register_ = puppi_register; vector_index_ = vector_index; }
     inline int puppi_register() const { return puppi_register_; }
-    inline bool charged() const { return charged_; }
+    inline unsigned vector_index() const { return vector_index_; }
   private:
     mutable double _eta = pseudojet_invalid_eta;
     int puppi_register_;
-    bool charged_;
+    unsigned vector_index_;
 };
 
 #endif

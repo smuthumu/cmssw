@@ -13,6 +13,7 @@ public:
     void setNPV(int iNPV){ fNPV = iNPV; }
 
     std::vector<PuppiCandidate> const & pfParticles() const { return fPFParticles; }
+    std::vector<PuppiCandidate> const & pvParticles() const { return fChargedPV; }
     std::vector<double> const & puppiWeights();
     const std::vector<double> & puppiRawAlphas(){ return fRawAlphas; }
     const std::vector<double> & puppiAlphas(){ return fVals; }
@@ -24,16 +25,17 @@ public:
     std::vector<PuppiCandidate> const & puppiParticles() const { return fPupParticles;}
 
 protected:
-    double  goodVar      (unsigned index, std::vector<PuppiCandidate> const &iParts, int iOpt, const double iRCone, bool useCharged=false);
-    void    getRMSAvg    (int iOpt,std::vector<PuppiCandidate> const &iParticles);
-    void    getRawAlphas    (int iOpt,std::vector<PuppiCandidate> const &iParticles);
+    double  goodVar      (const PuppiCandidate& iPart, std::vector<PuppiCandidate> const &iParts, int iOpt, const double iRCone);
+    void    getRMSAvg    (int iOpt,std::vector<PuppiCandidate> const &iParticles,std::vector<PuppiCandidate> const &iChargedParticles);
+    void    getRawAlphas    (int iOpt,std::vector<PuppiCandidate> const &iParticles,std::vector<PuppiCandidate> const &iChargedParticles);
     double  getChi2FromdZ(double iDZ);
     int     getPuppiId   ( float iPt, float iEta);
-    double  var_within_R (int iId, const std::vector<PuppiCandidate> & particles, unsigned centre_index, const double R, bool useCharged=false);
+    double  var_within_R (int iId, const std::vector<PuppiCandidate> & particles, const PuppiCandidate& centre, const double R);
     
     bool      fPuppiDiagnostics;
     std::vector<RecoObj>   fRecoParticles;
     std::vector<PuppiCandidate> fPFParticles;
+    std::vector<PuppiCandidate> fChargedPV;
     std::vector<PuppiCandidate> fPupParticles;
     std::vector<double>    fDistances;
     std::vector<double>    fWeights;
