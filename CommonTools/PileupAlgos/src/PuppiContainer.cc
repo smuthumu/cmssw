@@ -98,13 +98,13 @@ double PuppiContainer::var_within_R(int iId, const vector<PuppiCandidate> & part
     vector<double > near_dR2s;     near_dR2s.reserve(std::min(50UL, particles.size()));
     vector<double > near_pts;      near_pts.reserve(std::min(50UL, particles.size()));
     const double R2 = R*R;
-    for (unsigned k = 0; k < fPFParticles.size(); ++k){
-      if(useCharged and !(fPFParticles[k].charged())) continue;
+    for (unsigned k = 0; k < particles.size(); ++k){
+      if(useCharged and !(particles[k].charged())) continue;
       unsigned i = std::max(k,centre_index);
       unsigned j = std::min(k,centre_index);
       if ( fDistances[i*(i-1)/2+j] < R2 ){
-        near_dR2s.push_back(reco::deltaR2(fPFParticles[k], fPFParticles[centre_index]));
-        near_pts.push_back(fPFParticles[k].pt());
+        near_dR2s.push_back(reco::deltaR2(particles[k], particles[centre_index]));
+        near_pts.push_back(particles[k].pt());
       }
     }
     double var = 0;
@@ -122,7 +122,7 @@ double PuppiContainer::var_within_R(int iId, const vector<PuppiCandidate> & part
         else if(iId == 4) var += pt;
         else if(iId == 5) var += (pt * pt/dr2);
     }
-    if(iId == 1) var += fPFParticles[centre_index].pt(); //Sum in a cone
+    if(iId == 1) var += particles[centre_index].pt(); //Sum in a cone
     else if(iId == 0 && var != 0) var = log(var);
     else if(iId == 3 && var != 0) var = log(var);
     else if(iId == 5 && var != 0) var = log(var);
