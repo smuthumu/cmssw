@@ -29,7 +29,6 @@ void PuppiContainer::initialize(const std::vector<RecoObj> &iRecoObjects) {
     fRecoParticles.resize(0);
     fPFParticles  .resize(0);
     fPupParticles .resize(0);
-    fDistances    .resize(0);
     fWeights      .resize(0);
     fVals.resize(0);
     fRawAlphas.resize(0);
@@ -59,6 +58,7 @@ void PuppiContainer::initialize(const std::vector<RecoObj> &iRecoObjects) {
         if(fRecoParticle.id == 2 and fRecoParticle.charge != 0) puppi_register = fRecoParticle.charge+5; // from NPV use the charge as key +5 as key
         //keep track of charged particles associated to PV
         curPseudoJet.set_info( puppi_register, std::abs(fRecoParticle.id) == 1 );
+        curPseudoJet.dist_resize(fRecoParticles.size());
         if(std::abs(fRecoParticle.id) == 1) ++nChargedPV;
         // fill vector of pseudojets for internal references
         fPFParticles.push_back(curPseudoJet);
@@ -71,11 +71,11 @@ void PuppiContainer::initialize(const std::vector<RecoObj> &iRecoObjects) {
     if (fPVFrac != 0) fPVFrac = double(nChargedPV)/fPVFrac;
     else fPVFrac = 0;
     // precompute squared_distance values
-    // flat array optimal for memory locality
-    fDistances.resize(fPFParticles.size()*(fPFParticles.size()-1)/2);
     for (unsigned i = 0; i < fPFParticles.size(); ++i){
         for (unsigned j = 0; j < i; ++j){
-            fDistances[i*(i-1)/2+j] = fPFParticles[i].squared_distance(fPFParticles[j]);
+            double dist_tmp = fPFParticles[i].squared_distance(fPFParticles[j]);
+            fPFParticles[i].set_dist(j,dist_tmp);
+            fPFParticles[j].set_dist(i,dist_tmp);
         }
     }
 }
@@ -98,13 +98,12 @@ double PuppiContainer::var_within_R(int iId, const vector<PuppiCandidate> & part
     vector<double > near_dR2s;     near_dR2s.reserve(std::min(50UL, particles.size()));
     vector<double > near_pts;      near_pts.reserve(std::min(50UL, particles.size()));
     const double R2 = R*R;
-    for (unsigned k = 0; k < particles.size(); ++k){
-      if(useCharged and !(particles[k].charged())) continue;
-      unsigned i = std::max(k,centre_index);
-      unsigned j = std::min(k,centre_index);
-      if ( fDistances[i*(i-1)/2+j] < R2 ){
-        near_dR2s.push_back(reco::deltaR2(particles[k], particles[centre_index]));
-        near_pts.push_back(particles[k].pt());
+    const auto& centre = particles[centre_index];
+    for (const auto& part: particles){
+      if(useCharged and !(part.charged())) continue;
+      if ( part.dist(centre_index) < R2 ){
+        near_dR2s.push_back(reco::deltaR2(part, centre));
+        near_pts.push_back(part.pt());
       }
     }
     double var = 0;
@@ -122,7 +121,7 @@ double PuppiContainer::var_within_R(int iId, const vector<PuppiCandidate> & part
         else if(iId == 4) var += pt;
         else if(iId == 5) var += (pt * pt/dr2);
     }
-    if(iId == 1) var += particles[centre_index].pt(); //Sum in a cone
+    if(iId == 1) var += centre.pt(); //Sum in a cone
     else if(iId == 0 && var != 0) var = log(var);
     else if(iId == 3 && var != 0) var = log(var);
     else if(iId == 5 && var != 0) var = log(var);

@@ -35,7 +35,6 @@ protected:
     std::vector<RecoObj>   fRecoParticles;
     std::vector<PuppiCandidate> fPFParticles;
     std::vector<PuppiCandidate> fPupParticles;
-    std::vector<double>    fDistances;
     std::vector<double>    fWeights;
     std::vector<double>    fVals;
     std::vector<double>    fRawAlphas;

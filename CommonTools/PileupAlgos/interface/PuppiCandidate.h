@@ -2,6 +2,7 @@
 #define CommonTools_PileupAlgos_PuppiCandidate
 
 #include "fastjet/PseudoJet.hh"
+#include <vector>
 
 const double pseudojet_invalid_eta = -1e200;
 
@@ -16,10 +17,14 @@ class PuppiCandidate : public fastjet::PseudoJet {
     void set_info(int puppi_register, bool charged) { puppi_register_ = puppi_register; charged_ = charged; }
     inline int puppi_register() const { return puppi_register_; }
     inline bool charged() const { return charged_; }
+    void dist_resize(unsigned n) { dists_.resize(n,0.); }
+    void set_dist(unsigned i, double d) { dists_[i] = d; }
+    inline double dist(unsigned i) const { return dists_[i]; }
   private:
     mutable double _eta = pseudojet_invalid_eta;
     int puppi_register_;
     bool charged_;
+    std::vector<double> dists_;
 };
 
 #endif
