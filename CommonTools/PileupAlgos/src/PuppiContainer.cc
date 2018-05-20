@@ -58,7 +58,7 @@ void PuppiContainer::initialize(const std::vector<RecoObj> &iRecoObjects) {
         if(fRecoParticle.id == 2 and fRecoParticle.charge != 0) puppi_register = fRecoParticle.charge+5; // from NPV use the charge as key +5 as key
         //keep track of charged particles associated to PV
         curPseudoJet.set_info( puppi_register, std::abs(fRecoParticle.id) == 1 );
-        curPseudoJet.dist_resize(fRecoParticles.size());
+        curPseudoJet.simple_reserve(fRecoParticles.size());
         if(std::abs(fRecoParticle.id) == 1) ++nChargedPV;
         // fill vector of pseudojets for internal references
         fPFParticles.push_back(curPseudoJet);
@@ -74,8 +74,9 @@ void PuppiContainer::initialize(const std::vector<RecoObj> &iRecoObjects) {
     for (unsigned i = 0; i < fPFParticles.size(); ++i){
         for (unsigned j = 0; j < i; ++j){
             double dist_tmp = fPFParticles[i].squared_distance(fPFParticles[j]);
-            fPFParticles[i].set_dist(j,dist_tmp);
-            fPFParticles[j].set_dist(i,dist_tmp);
+            double deltaR2_tmp = reco::deltaR2(fPFParticles[i],fPFParticles[j]);
+            fPFParticles[i].simple_emplace_back(fPFParticles[j].charged(),dist_tmp,deltaR2_tmp,fPFParticles[j].pt());
+            fPFParticles[j].simple_emplace_back(fPFParticles[i].charged(),dist_tmp,deltaR2_tmp,fPFParticles[i].pt());
         }
     }
 }
@@ -99,11 +100,11 @@ double PuppiContainer::var_within_R(int iId, const vector<PuppiCandidate> & part
     vector<double > near_pts;      near_pts.reserve(std::min(50UL, particles.size()));
     const double R2 = R*R;
     const auto& centre = particles[centre_index];
-    for (const auto& part: particles){
-      if(useCharged and !(part.charged())) continue;
-      if ( part.dist(centre_index) < R2 ){
-        near_dR2s.push_back(reco::deltaR2(part, centre));
-        near_pts.push_back(part.pt());
+    for (const auto& simple: centre.simples()){
+      if(useCharged and !(simple.charged_)) continue;
+      if ( simple.dist_ < R2 ){
+        near_dR2s.push_back(simple.deltaR2_);
+        near_pts.push_back(simple.pt_);
       }
     }
     double var = 0;

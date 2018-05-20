@@ -10,6 +10,14 @@ const double pseudojet_invalid_eta = -1e200;
 // Puppi uses register to decide between NHs, PV CHs, and PU CHs.
 class PuppiCandidate : public fastjet::PseudoJet {
   public:
+    struct SimpleCandidate {
+      bool charged_;
+      double dist_;
+      double deltaR2_;
+      double pt_;
+      SimpleCandidate(bool c, double d, double r, double p) : charged_(c), dist_(d), deltaR2_(r), pt_(p) {}
+    };
+
     using fastjet::PseudoJet::PseudoJet;
     double pseudorapidity() const { _ensure_valid_eta(); return _eta; }
     double eta() const { return pseudorapidity(); }
@@ -17,14 +25,14 @@ class PuppiCandidate : public fastjet::PseudoJet {
     void set_info(int puppi_register, bool charged) { puppi_register_ = puppi_register; charged_ = charged; }
     inline int puppi_register() const { return puppi_register_; }
     inline bool charged() const { return charged_; }
-    void dist_resize(unsigned n) { dists_.resize(n,0.); }
-    void set_dist(unsigned i, double d) { dists_[i] = d; }
-    inline double dist(unsigned i) const { return dists_[i]; }
+    void simple_reserve(unsigned n) { simples_.reserve(n); }
+    void simple_emplace_back(bool c, double d, double r, double p) { simples_.emplace_back(c,d,r,p); }
+    const std::vector<SimpleCandidate>& simples() const { return simples_; }
   private:
     mutable double _eta = pseudojet_invalid_eta;
     int puppi_register_;
     bool charged_;
-    std::vector<double> dists_;
+    std::vector<SimpleCandidate> simples_;
 };
 
 #endif
