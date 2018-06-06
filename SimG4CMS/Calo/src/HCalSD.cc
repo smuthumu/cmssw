@@ -561,7 +561,7 @@ void HCalSD::update(const BeginOfJob * job) {
 }
 
 void HCalSD::initRun() {
-  edm::LogWarning("HcalSim") << "InitRun for HFFFFF ";
+  edm::LogInfo("HcalSim") << "InitRun for HFFFFF ";
   if (showerLibrary.get()) showerLibrary.get()->initRun(nullptr, hcalConstants);
   if (showerParam.get())   showerParam.get()->initRun(hcalConstants);
   if (hfshower.get())      hfshower.get()->initRun(hcalConstants);
