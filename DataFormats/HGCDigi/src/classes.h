@@ -13,18 +13,6 @@ namespace DataFormats_HGCDigi {
     edm::SortedCollection< HGCDataFrame<DetId,HGCSample> > scDataFrames;
     edm::Wrapper< edm::SortedCollection< HGCDataFrame<DetId,HGCSample> > > prodDataFrames;
 
-    //HEX specific
-    HGCDataFrame<HGCalDetId,HGCSample> anHGCalDataFrame;
-    std::vector<HGCDataFrame<HGCalDetId,HGCSample> > vHGCalDataFrames;
-    edm::SortedCollection< HGCDataFrame<HGCalDetId,HGCSample> > scHGCalDataFrames;
-    edm::Wrapper< edm::SortedCollection< HGCDataFrame<HGCalDetId,HGCSample> > > prodHGCalDataFrames;
-
-    //BH (hcal) specific
-    HGCDataFrame<HcalDetId,HGCSample> anHGCalBHDataFrame;
-    std::vector<HGCDataFrame<HcalDetId,HGCSample> > vHGCalBHDataFrames;
-    edm::SortedCollection< HGCDataFrame<HcalDetId,HGCSample> > scHGCalBHDataFrames;
-    edm::Wrapper< edm::SortedCollection< HGCDataFrame<HcalDetId,HGCSample> > > prodHGCalBHDataFrames;
-
     // Sim cell accumulator (for premixing)
     PHGCSimAccumulator saHGC;
     PHGCSimAccumulator::Data saHGCdata;

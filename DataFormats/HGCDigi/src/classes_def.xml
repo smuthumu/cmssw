@@ -9,16 +9,26 @@
    <class name="edm::Wrapper<edm::SortedCollection<HGCDataFrame<DetId,HGCSample>,edm::StrictWeakOrdering<HGCDataFrame<DetId,HGCSample> > > >" />
 
    <!-- HEX specific -->
-   <class name="HGCDataFrame<HGCalDetId,HGCSample>"/>
-   <class name="std::vector<HGCDataFrame<HGCalDetId,HGCSample> >"/>
-   <class name="edm::SortedCollection<HGCDataFrame<HGCalDetId,HGCSample>, edm::StrictWeakOrdering<HGCDataFrame<HGCalDetId,HGCSample> > >"/>
-   <class name="edm::Wrapper<edm::SortedCollection<HGCDataFrame<HGCalDetId,HGCSample>,edm::StrictWeakOrdering<HGCDataFrame<HGCalDetId,HGCSample> > > >" />
+   <ioread sourceClass="HGCDataFrame<HGCalDetId,HGCSample>" targetClass="HGCDataFrame<DetId,HGCSample>" source="std::vector<HGCSample> data_;" target="data_">
+     <![CDATA[data_ = onfile.data_;]]>
+   </ioread>
+   <ioread sourceClass="HGCDataFrame<HGCalDetId,HGCSample>" targetClass="HGCDataFrame<DetId,HGCSample>" source="HGCalDetId id_;" target="id_">
+     <![CDATA[id_ = DetId(onfile.id_);]]>
+   </ioread>
+   <ioread sourceClass="HGCDataFrame<HGCalDetId,HGCSample>" targetClass="HGCDataFrame<DetId,HGCSample>" source="size_t maxSampleSize_;" target="maxSampleSize_">
+     <![CDATA[maxSampleSize_ = onfile.maxSampleSize_;]]>
+   </ioread>
    
    <!-- BH specific -->
-   <class name="HGCDataFrame<HcalDetId,HGCSample>"/>
-   <class name="std::vector<HGCDataFrame<HcalDetId,HGCSample> >"/>
-   <class name="edm::SortedCollection<HGCDataFrame<HcalDetId,HGCSample>, edm::StrictWeakOrdering<HGCDataFrame<HcalDetId,HGCSample> > >"/>
-   <class name="edm::Wrapper<edm::SortedCollection<HGCDataFrame<HcalDetId,HGCSample>,edm::StrictWeakOrdering<HGCDataFrame<HcalDetId,HGCSample> > > >" />
+   <ioread sourceClass="HGCDataFrame<HcalDetId,HGCSample>" targetClass="HGCDataFrame<DetId,HGCSample>" source="std::vector<HGCSample> data_;" target="data_">
+     <![CDATA[data_ = onfile.data_;]]>
+   </ioread>
+   <ioread sourceClass="HGCDataFrame<HcalDetId,HGCSample>" targetClass="HGCDataFrame<DetId,HGCSample>" source="HcalDetId id_;" target="id_">
+     <![CDATA[id_ = DetId(onfile.id_);]]>
+   </ioread>
+   <ioread sourceClass="HGCDataFrame<HcalDetId,HGCSample>" targetClass="HGCDataFrame<DetId,HGCSample>" source="size_t maxSampleSize_;" target="maxSampleSize_">
+     <![CDATA[maxSampleSize_ = onfile.maxSampleSize_;]]>
+   </ioread>
 
    <class name="PHGCSimAccumulator"/>
    <class name="PHGCSimAccumulator::Data"/>
