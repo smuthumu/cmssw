@@ -6,7 +6,7 @@ PFCandidateJetsWithEEnoise = cms.EDProducer(
     "BadPFCandidateJetsEEnoiseProducer",
     jetsrc                     = cms.InputTag("slimmedJets"),
     userawPt                   = cms.bool(True),
-    PtThreshold                = cms.double(75.0),
+    PtThreshold                = cms.double(50.0),
     MinEtaThreshold            = cms.double(2.65),
     MaxEtaThreshold            = cms.double(3.139)
     )

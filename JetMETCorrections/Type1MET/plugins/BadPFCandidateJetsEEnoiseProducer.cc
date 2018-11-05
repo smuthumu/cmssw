@@ -88,7 +88,7 @@ void pat::BadPFCandidateJetsEEnoiseProducer::fillDescriptions(edm::Configuration
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("jetsrc",edm::InputTag("slimmedJets"));
   desc.add<bool>("userawPt",true);
-  desc.add<double>("PtThreshold",75.0);
+  desc.add<double>("PtThreshold",50.0);
   desc.add<double>("MinEtaThreshold",2.65);
   desc.add<double>("MaxEtaThreshold",3.139);
 
